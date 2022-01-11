@@ -8,7 +8,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
+  # cupertino_icons: ^1.0.2
 
 dev_dependencies:
   flutter_test:
@@ -20,6 +20,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^1.0.0
+  table_calendar: ^3.0.3
   sqflite: ^2.0.1
   path: ^1.8.0
 

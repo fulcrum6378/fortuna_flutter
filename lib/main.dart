@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dict.dart';
 import 'intro.dart';
+import 'panel.dart';
 
 // adb connect 192.168.1.20:
 
@@ -16,9 +17,13 @@ class Fortuna extends StatelessWidget {
     // TODO: https://docs.flutter.dev/cookbook/persistence/sqlite
 
     return MaterialApp(
-        title: dict[l]!["appName"]!,
-        theme: ThemeData(primarySwatch: Colors.blue),
-        // TODO: MAKE IT CONDITIONAL BETWEEN INTRO AND HOME
-        home: Intro(l));
+      title: dict[l]!["appName"]!,
+      theme: ThemeData(
+        primarySwatch: Colors.green, // 4CAF50
+        secondaryHeaderColor: Colors.red, // F44336
+      ),
+      // TODO: MAKE IT CONDITIONAL BETWEEN INTRO AND HOME
+      home: Panel(l),//Intro(l),
+    );
   }
 }

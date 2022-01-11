@@ -1,4 +1,4 @@
-package ir.mahdiparastesh.fortuna.fortuna
+package ir.mahdiparastesh.fortuna
 
 import io.flutter.embedding.android.FlutterActivity
 

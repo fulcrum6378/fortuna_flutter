@@ -35,66 +35,71 @@ class IntroState extends State<Intro> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     if (page != 0) _controller.stop();
+    Widget? body;
+
     switch (page) {
+      case 1:
+        body = null;
+        break;
       default:
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: Center(
-            child: FractionallySizedBox(
-              widthFactor: 0.8,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Transform.rotate(
-                    angle: _animation.value * math.pi / 180,
-                    child: const SizedBox(
-                      child: Image(image: AssetImage('assets/logo.png')),
-                      width: 200,
-                      height: 200,
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 35, bottom: 15),
-                    child: Text(
-                      dict[widget.l]!["welcome"]!,
-                      textScaleFactor: 2.5,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 35),
-                    child: Text(
-                      dict[widget.l]!["welDesc"]!,
-                      textScaleFactor: 1.5,
-                      textAlign: TextAlign.justify,
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                  FractionallySizedBox(
-                    widthFactor: 1,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        padding: MaterialStateProperty.all<EdgeInsets>(
-                            const EdgeInsets.symmetric(vertical: 10)),
-                      ),
-                      child: Text(
-                        dict[widget.l]!["next"]!,
-                        textScaleFactor: 2,
-                      ),
-                      onPressed: () => setState(() => page++),
-                    ),
-                  ),
-                ],
+        body = FractionallySizedBox(
+          widthFactor: 0.8,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Transform.rotate(
+                angle: _animation.value * math.pi / 180,
+                child: const SizedBox(
+                  child: Image(image: AssetImage('assets/logo.png')),
+                  width: 200,
+                  height: 200,
+                ),
               ),
-            ),
+              Container(
+                margin: const EdgeInsets.only(top: 35, bottom: 15),
+                child: Text(
+                  dict[widget.l]!["welcome"]!,
+                  textScaleFactor: 2.5,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(bottom: 35),
+                child: Text(
+                  dict[widget.l]!["welDesc"]!,
+                  textScaleFactor: 1.5,
+                  textAlign: TextAlign.justify,
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              FractionallySizedBox(
+                widthFactor: 1,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    padding: MaterialStateProperty.all<EdgeInsets>(
+                        const EdgeInsets.symmetric(vertical: 10)),
+                  ),
+                  child: Text(
+                    dict[widget.l]!["next"]!,
+                    textScaleFactor: 2,
+                  ),
+                  onPressed: () => setState(() => page++),
+                ),
+              ),
+            ],
           ),
         );
     }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(child: body),
+    );
   }
 }
