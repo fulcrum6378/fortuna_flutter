@@ -2,11 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'data/conf.dart';
 import 'dict.dart';
 
 class Intro extends StatefulWidget {
-  const Intro(this.l, {Key? key}) : super(key: key);
-  final String l;
+  const Intro({Key? key}) : super(key: key);
 
   @override
   IntroState createState() => IntroState();
@@ -58,7 +58,7 @@ class IntroState extends State<Intro> with TickerProviderStateMixin {
               Container(
                 margin: const EdgeInsets.only(top: 35, bottom: 15),
                 child: Text(
-                  dict[widget.l]!["welcome"]!,
+                  dict[Config.lang]!["welcome"]!,
                   textScaleFactor: 2.5,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
@@ -69,7 +69,7 @@ class IntroState extends State<Intro> with TickerProviderStateMixin {
               Container(
                 margin: const EdgeInsets.only(bottom: 35),
                 child: Text(
-                  dict[widget.l]!["welDesc"]!,
+                  dict[Config.lang]!["welDesc"]!,
                   textScaleFactor: 1.5,
                   textAlign: TextAlign.justify,
                   style: const TextStyle(
@@ -86,7 +86,7 @@ class IntroState extends State<Intro> with TickerProviderStateMixin {
                         const EdgeInsets.symmetric(vertical: 10)),
                   ),
                   child: Text(
-                    dict[widget.l]!["next"]!,
+                    dict[Config.lang]!["next"]!,
                     textScaleFactor: 2,
                   ),
                   onPressed: () => setState(() => page++),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'data/conf.dart';
 import 'dict.dart';
 import 'intro.dart';
 import 'panel.dart';
@@ -10,20 +11,39 @@ void main() => runApp(const Fortuna());
 
 class Fortuna extends StatelessWidget {
   const Fortuna({Key? key}) : super(key: key);
-  final String l = "en";
 
   @override
   Widget build(BuildContext context) {
     // TODO: https://docs.flutter.dev/cookbook/persistence/sqlite
 
     return MaterialApp(
-      title: dict[l]!["appName"]!,
+      title: dict[Config.lang]!["appName"]!,
       theme: ThemeData(
         primarySwatch: Colors.green, // 4CAF50
         secondaryHeaderColor: Colors.red, // F44336
       ),
-      // TODO: MAKE IT CONDITIONAL BETWEEN INTRO AND HOME
-      home: Panel(l),//Intro(l),
+      home: const Pager(),
     );
+  }
+}
+
+class Pager extends StatefulWidget {
+  const Pager({Key? key}) : super(key: key);
+
+  @override
+  PagerState createState() => PagerState();
+}
+
+class PagerState extends State<Pager> {
+  var page = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    switch (page) {
+      case 0:
+        return const Intro();
+      default:
+        return const Panel();
+    }
   }
 }
