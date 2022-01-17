@@ -1,34 +1,44 @@
-import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'dart:math';
 
+import 'package:flutter/material.dart';
+
+import 'more/page.dart';
 import 'dict.dart';
 
-class Panel extends StatefulWidget {
-  const Panel(this.l, {Key? key}) : super(key: key);
+class Panel extends MyPage {
+  Panel(String l, {Key? key}) : super(l, "appName", TaoCalendar(l), key: key);
+}
+
+class TaoCalendar extends StatefulWidget {
+  const TaoCalendar(this.l, {Key? key}) : super(key: key);
   final String l;
 
   @override
-  PanelState createState() => PanelState();
+  State<StatefulWidget> createState() => TaoCalendarState();
 }
 
-class PanelState extends State<Panel> {
+class TaoCalendarState extends State<TaoCalendar> {
+  MediaQueryData? mq;
+  late double baseSize;
+
+  @override
+  void initState() {
+    mq = MediaQuery.of(context);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(dict[widget.l]!["appName"]!),
-      ),
-      body: Center(
-        child: FractionallySizedBox(
-          heightFactor: 0.58,
-          child: TableCalendar(
-            firstDay: DateTime.utc(2000, 2, 6), // birth date
-            lastDay: DateTime.utc(2022, 1, 12), // tomorrow
-            focusedDay: DateTime.now(),
-          ),
+    baseSize = [mq!.size.width, mq!.size.height].reduce(min);
+
+    return Table(
+      defaultColumnWidth: const FlexColumnWidth(1),
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      children: <TableRow>[
+        TableRow(
+          children: <Widget>[],
         ),
-      ),
+      ],
     );
   }
 }
