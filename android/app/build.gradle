@@ -29,7 +29,7 @@ android {
     compileSdk 31
 
     defaultConfig {
-        applicationId "ir.mahdiparastesh.fortuna"
+        applicationId "ir.mahdiparastesh.fortuna.flutter"
         minSdk 16
         targetSdk 31
         versionCode flutterVersionCode.toInteger()
