@@ -1,10 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:time_machine/time_machine.dart';
 
 import 'conf.dart';
 import 'dict.dart';
 
-void main() => runApp(const Fortuna());
+void main() {
+  ThemeData theme = !Fortuna.night()
+      ? ThemeData(
+          primaryColor: const Color(0xFF4CAF50),
+          colorScheme: ThemeData().colorScheme.copyWith(
+              secondary: const Color(0xFFF44336), onPrimary: Colors.white),
+          textTheme: TextTheme(bodyText2: Fortuna.font(15, false)),
+          dialogTheme: DialogTheme(
+            titleTextStyle: Fortuna.font(20, true),
+            contentTextStyle: Fortuna.font(17, false),
+          ),
+          scaffoldBackgroundColor: Colors.white,
+          splashColor: const Color(0x444CAF50), // 0x44F44336
+        )
+      : ThemeData(
+          primaryColor: const Color(0xFF034C06),
+          colorScheme: ThemeData.dark().colorScheme.copyWith(
+              secondary: const Color(0xFF670D06), onPrimary: Colors.white),
+          textTheme: TextTheme(bodyText2: Fortuna.font(15)),
+          dialogTheme: DialogTheme(
+            titleTextStyle: Fortuna.font(20, true),
+            contentTextStyle: Fortuna.font(17),
+          ),
+          scaffoldBackgroundColor: Colors.black,
+          splashColor: const Color(0x444CAF50),
+        );
+  // TODO: These values do NOT change when system night mode is changed!
+
+  runApp(MaterialApp(
+    title: dict[Config.lang]!["appName"]!,
+    theme: theme, //themeMode: ThemeMode.system,
+    debugShowCheckedModeBanner: false,
+    home: const Fortuna(),
+  ));
+}
 
 class Fortuna extends StatelessWidget {
   const Fortuna({Key? key}) : super(key: key);
@@ -12,89 +47,88 @@ class Fortuna extends StatelessWidget {
   static bool night() =>
       WidgetsBinding.instance?.window.platformBrightness == Brightness.dark;
 
+  static TextStyle font(double size, [bool bold = false, Color? color]) =>
+      TextStyle(
+        color: color ?? Color(!Fortuna.night() ? 0xFF777777 : 0xFF670D06),
+        fontFamily: 'Quattrocento',
+        fontWeight: bold ? FontWeight.w800 : FontWeight.w400,
+        fontSize: size,
+      );
+
   @override
   Widget build(BuildContext context) {
-    ThemeData theme = !night()
-        ? ThemeData(
-            primaryColor: const Color(0xFF4CAF50),
-            colorScheme: ThemeData().colorScheme.copyWith(
-                secondary: const Color(0xFFF44336), onPrimary: Colors.white),
-            textTheme:
-                const TextTheme(bodyText2: TextStyle(color: Color(0xFF777777))),
-            scaffoldBackgroundColor: Colors.white,
-            splashColor: const Color(0x444CAF50), // 0x44F44336
-          )
-        : ThemeData(
-            primaryColor: const Color(0xFF034C06),
-            colorScheme: ThemeData.dark().colorScheme.copyWith(
-                secondary: const Color(0xFF670D06), onPrimary: Colors.white),
-            textTheme:
-                const TextTheme(bodyText2: TextStyle(color: Color(0xFFFFFFFF))),
-            scaffoldBackgroundColor: Colors.black,
-            splashColor: const Color(0x444CAF50),
-          );
-    // TODO: These values do NOT change when system night mode is changed!
+    TextStyle navStyle =
+        Fortuna.font(19, true, Theme.of(context).colorScheme.onPrimary);
 
-    var navStyle = TextStyle(
-      color: theme.colorScheme.onPrimary,
-      fontFamily: 'Quattrocento',
-      fontWeight: FontWeight.w800,
-      fontSize: 17,
-    );
-
-    return MaterialApp(
-      title: dict[Config.lang]!["appName"]!,
-      theme: theme, //themeMode: ThemeMode.system,
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: theme.primaryColor,
-            systemNavigationBarColor: theme.primaryColor,
-          ),
-          toolbarHeight: 60,
-          backgroundColor: theme.primaryColor,
-          title: Text(
-            dict[Config.lang]!["appName"]!,
-            style: const TextStyle(fontFamily: 'MorrisRoman', fontSize: 28),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Theme.of(context).primaryColor,
+          systemNavigationBarColor: Theme.of(context).primaryColor,
         ),
-        drawer: Drawer(
-          backgroundColor: theme.primaryColor,
-          child: ListView(
-            padding: const EdgeInsets.only(top: 40),
-            children: <InkWell>[
-              InkWell(
-                onTap: () => averageOfTotal(context),
-                child: ListTile(
-                  leading: Icon(Icons.calculate_sharp,
-                      color: theme.colorScheme.onPrimary),
-                  title:
-                      Text(dict[Config.lang]!["navAverage"]!, style: navStyle),
-                ),
-              ),
-              InkWell(
-                onTap: () {},
-                child: ListTile(
-                  leading: Icon(Icons.import_export,
-                      color: theme.colorScheme.onPrimary),
-                  title:
-                      Text(dict[Config.lang]!["navExport"]!, style: navStyle),
-                ),
-              ),
-              InkWell(
-                onTap: () {},
-                child: ListTile(
-                  leading: Icon(Icons.import_export,
-                      color: theme.colorScheme.onPrimary),
-                  title:
-                      Text(dict[Config.lang]!["navImport"]!, style: navStyle),
-                ),
-              ),
-            ],
-          ),
+        toolbarHeight: 60,
+        backgroundColor: Theme.of(context).primaryColor,
+        title: Text(
+          dict[Config.lang]!["appName"]!,
+          style: const TextStyle(fontFamily: 'MorrisRoman', fontSize: 28),
         ),
-        body: Column(children: const [Panel(), Flexible(child: Luna())]),
+      ),
+      drawer: Drawer(
+        backgroundColor: Theme.of(context).primaryColor,
+        child: ListView(
+          padding: const EdgeInsets.only(top: 40),
+          children: <InkWell>[
+            InkWell(
+              onTap: () => showDialog<String>(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) => AlertDialog(
+                  title: Text(dict[Config.lang]!["navAverage"]!),
+                  content: const Text('1.54363'),
+                  actionsAlignment: MainAxisAlignment.start,
+                  actions: <Widget>[
+                    MaterialButton(
+                      child: Text(
+                        dict[Config.lang]!["ok"]!,
+                        style: Theme.of(context).textTheme.bodyText2,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
+              child: ListTile(
+                leading: Icon(Icons.calculate_sharp,
+                    color: Theme.of(context).colorScheme.onPrimary),
+                title: Text(dict[Config.lang]!["navAverage"]!, style: navStyle),
+              ),
+            ),
+            InkWell(
+              onTap: () {},
+              child: ListTile(
+                leading: Icon(Icons.import_export,
+                    color: Theme.of(context).colorScheme.onPrimary),
+                title: Text(dict[Config.lang]!["navExport"]!, style: navStyle),
+              ),
+            ),
+            InkWell(
+              onTap: () {},
+              child: ListTile(
+                leading: Icon(Icons.import_export,
+                    color: Theme.of(context).colorScheme.onPrimary),
+                title: Text(dict[Config.lang]!["navImport"]!, style: navStyle),
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: ScrollConfiguration(
+        behavior: const ScrollBehavior(),
+        child: GlowingOverscrollIndicator(
+          axisDirection: AxisDirection.down,
+          color: Theme.of(context).splashColor,
+          child: ListView(children: const [Panel(), Flexible(child: Luna())]),
+        ),
       ),
     );
   }
@@ -111,7 +145,7 @@ class PanelState extends State<Panel> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 140),
+      padding: const EdgeInsets.symmetric(vertical: 40),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -124,9 +158,9 @@ class PanelState extends State<Panel> {
                           ))
                   .toList(),
               onChanged: (s) {}),
-          TextField(
+          /*TextField(
             maxLength: 4,
-          ),
+          ),*/ // RUINS EVERYTHING
         ],
       ),
     );
@@ -151,7 +185,8 @@ class LunaState extends State<Luna> {
     }
 
     return GridView.count(
-      //physics: const NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
       crossAxisCount: 5,
       children: days
           .map((i) => InkWell(
@@ -166,23 +201,9 @@ class LunaState extends State<Luna> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        romanNumbers[i],
-                        style: const TextStyle(
-                          fontFamily: 'Quattrocento',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 18,
-                        ),
-                      ),
+                      Text(romanNumbers[i], style: Fortuna.font(18)),
                       const SizedBox(height: 3),
-                      const Text(
-                        "0",
-                        style: TextStyle(
-                          fontFamily: 'Quattrocento',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 13,
-                        ),
-                      ),
+                      Text("0", style: Fortuna.font(13)),
                     ],
                   ),
                 ),
@@ -190,32 +211,4 @@ class LunaState extends State<Luna> {
           .toList(),
     );
   }
-}
-
-Future<void> averageOfTotal(BuildContext context) async {
-  return showDialog<void>(
-    context: context,
-    barrierDismissible: false, // user must tap button!
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('AlertDialog Title'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: const <Widget>[
-              Text('This is a demo alert dialog.'),
-              Text('Would you like to approve of this message?'),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Approve'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
 }

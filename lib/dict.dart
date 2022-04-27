@@ -6,6 +6,14 @@ const Map<String, Map<String, String>> dict = {
         " It is designed to calculate the amount of pleasure and pain that"
         " one senses in their life based on Felicific Calculus;"
         " this app will later be connected to a Dolorimeter device.",
+    "variabilis": "Variabilis: %s",
+    "year": "Year",
+    "save": "Save",
+    "cancel": "Cancel",
+    "clear": "Clear",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
     "navExport": "Export to Json",
     "navImport": "Import from Json",
     "navAverage": "Average of Total",
