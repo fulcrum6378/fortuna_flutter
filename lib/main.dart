@@ -1,16 +1,25 @@
+// ignore_for_file: invalid_use_of_protected_member
+
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:time_machine/time_machine.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'conf.dart';
 import 'dict.dart';
+import 'vita.dart';
 
 void main() {
+  const Color cp = Color(0xFF4CAF50), cpd = Color(0xFF034C06);
   ThemeData theme = !Fortuna.night()
       ? ThemeData(
-          primaryColor: const Color(0xFF4CAF50),
+          primaryColor: cp,
           colorScheme: ThemeData().colorScheme.copyWith(
-              secondary: const Color(0xFFF44336), onPrimary: Colors.white),
+              primary: cp,
+              secondary: const Color(0xFFF44336),
+              onPrimary: Colors.white),
           textTheme: TextTheme(bodyText2: Fortuna.font(15, false)),
           dialogTheme: DialogTheme(
             titleTextStyle: Fortuna.font(20, true),
@@ -20,9 +29,11 @@ void main() {
           splashColor: const Color(0x444CAF50), // 0x44F44336
         )
       : ThemeData(
-          primaryColor: const Color(0xFF034C06),
+          primaryColor: cpd,
           colorScheme: ThemeData.dark().colorScheme.copyWith(
-              secondary: const Color(0xFF670D06), onPrimary: Colors.white),
+              primary: cpd,
+              secondary: const Color(0xFF670D06),
+              onPrimary: Colors.white),
           textTheme: TextTheme(bodyText2: Fortuna.font(15)),
           dialogTheme: DialogTheme(
             titleTextStyle: Fortuna.font(20, true),
@@ -44,6 +55,20 @@ void main() {
 class Fortuna extends StatelessWidget {
   const Fortuna({Key? key}) : super(key: key);
 
+  static File? stored;
+  static Vita? vita;
+  static late DateTime calendar;
+  static late String luna;
+  static bool lunaChanged = false;
+
+  static final panelGKey = GlobalKey();
+  static final lunaGKey = GlobalKey();
+
+  static List<double?> emptyLuna() =>
+      [for (var i = 1; i <= calendar.defPos() + 1; i++) null];
+
+  static thisLuna() => vita?[luna] ?? emptyLuna();
+
   static bool night() =>
       WidgetsBinding.instance?.window.platformBrightness == Brightness.dark;
 
@@ -57,6 +82,27 @@ class Fortuna extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (vita == null) vita = Vita();
+    if (!lunaChanged) {
+      calendar = DateTime.now();
+      luna = calendar.toKey();
+      // setState on second and later onResumes
+    }
+    if (vita?[luna] == null) vita?[luna] = emptyLuna();
+
+    getApplicationSupportDirectory().then((dir) {
+      stored = File('${dir.path}/vita.json');
+      stored?.exists().then((exists) {
+        if (exists)
+          stored?.readAsString().then((json) {
+            vita = jsonDecode(json);
+            // TODO: lunaGKey.currentState?.setState(() {});
+          });
+        else
+          vita?.save(stored);
+      });
+    });
+
     TextStyle navStyle =
         Fortuna.font(19, true, Theme.of(context).colorScheme.onPrimary);
 
@@ -127,7 +173,7 @@ class Fortuna extends StatelessWidget {
         child: GlowingOverscrollIndicator(
           axisDirection: AxisDirection.down,
           color: Theme.of(context).splashColor,
-          child: ListView(children: const [Panel(), Flexible(child: Luna())]),
+          child: ListView(children: [Panel(), Flexible(child: Luna())]),
         ),
       ),
     );
@@ -135,7 +181,7 @@ class Fortuna extends StatelessWidget {
 }
 
 class Panel extends StatefulWidget {
-  const Panel({Key? key}) : super(key: key);
+  Panel() : super(key: Fortuna.panelGKey);
 
   @override
   State<StatefulWidget> createState() => PanelState();
@@ -145,22 +191,43 @@ class PanelState extends State<Panel> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 40),
+      padding: const EdgeInsets.symmetric(vertical: 30),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          DropdownButton<String>(
-              items: jalaliMonths
-                  .map<DropdownMenuItem<String>>(
-                      (String value) => DropdownMenuItem<String>(
+          DropdownButtonHideUnderline(
+            child: DropdownButton<int>(
+              items: [for (var i = 1; i <= 12; i++) i] // change 12 in Hebrew
+                  .map<DropdownMenuItem<int>>(
+                      (int value) => DropdownMenuItem<int>(
                             value: value,
-                            child: Text(value),
+                            child: Text(
+                              gregorianMonths[value - 1],
+                            ),
                           ))
                   .toList(),
-              onChanged: (s) {}),
-          /*TextField(
-            maxLength: 4,
-          ),*/ // RUINS EVERYTHING
+              value: Fortuna.calendar.month,
+              onChanged: (i) {},
+              style: Fortuna.font(18.5, true),
+            ),
+          ),
+          const SizedBox(width: 30),
+          SizedBox(
+            width: 100,
+            child: TextFormField(
+              initialValue: Fortuna.calendar.year.toString(),
+              maxLength: 4,
+              maxLines: 1,
+              textAlign: TextAlign.left,
+              keyboardType: TextInputType.number,
+              style: Fortuna.font(19.5, true),
+              decoration: InputDecoration(
+                counterText: "",
+                border: InputBorder.none,
+              ),
+              onChanged: (s) {},
+            ),
+          ),
         ],
       ),
     );
@@ -168,13 +235,15 @@ class PanelState extends State<Panel> {
 }
 
 class Luna extends StatefulWidget {
-  const Luna({Key? key}) : super(key: key);
+  Luna() : super(key: Fortuna.lunaGKey);
 
   @override
   State<StatefulWidget> createState() => LunaState();
 }
 
 class LunaState extends State<Luna> {
+  List<double?> luna = Fortuna.vita![Fortuna.luna]!;
+
   @override
   Widget build(BuildContext context) {
     //DateTime now = DateTime.now();
@@ -188,27 +257,35 @@ class LunaState extends State<Luna> {
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       crossAxisCount: 5,
-      children: days
-          .map((i) => InkWell(
-                onTap: () {},
-                child: Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 0.5,
-                          color: !Fortuna.night()
-                              ? const Color(0xFFF0F0F0)
-                              : const Color(0xFF252525))),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(romanNumbers[i], style: Fortuna.font(18)),
-                      const SizedBox(height: 3),
-                      Text("0", style: Fortuna.font(13)),
-                    ],
-                  ),
+      children: days.map((i) {
+        double? score = luna[i] ?? luna.getDefault();
+        bool isEstimated = luna[i] == null && luna.getDefault() != null;
+
+        return InkWell(
+          onTap: () {
+            luna.changeVar(i);
+          },
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(
+                    width: 0.5,
+                    color: !Fortuna.night()
+                        ? const Color(0xFFF0F0F0)
+                        : const Color(0xFF252525))),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(romanNumbers[i], style: Fortuna.font(18)),
+                const SizedBox(height: 3),
+                Text(
+                  (isEstimated ? "c. " : "") + score.showScore(),
+                  style: Fortuna.font(13),
                 ),
-              ))
-          .toList(),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

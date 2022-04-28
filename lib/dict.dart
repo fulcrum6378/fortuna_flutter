@@ -28,6 +28,21 @@ const Map<String, Map<String, String>> dict = {
   }*/
 };
 
+const gregorianMonths = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+];
+
 const jalaliMonths = [
   'Farvardin',
   'Ordibehesht',
