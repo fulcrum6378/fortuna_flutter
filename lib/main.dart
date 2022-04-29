@@ -7,45 +7,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'conf.dart';
 import 'dict.dart';
 import 'vita.dart';
 
 void main() {
-  const Color cp = Color(0xFF4CAF50), cpd = Color(0xFF034C06);
+  const Color cp = Color(0xFF4CAF50),
+      cpd = Color(0xFF034C06),
+      cpw = Color(0x444CAF50),
+      cs = Color(0xFFF44336),
+      csd = Color(0xFF670D06),
+      cwd = Color(0x44FFFFFF);
   ThemeData theme = !Fortuna.night()
       ? ThemeData(
           primaryColor: cp,
-          colorScheme: ThemeData().colorScheme.copyWith(
-              primary: cp,
-              secondary: const Color(0xFFF44336),
-              onPrimary: Colors.white),
+          colorScheme: ThemeData()
+              .colorScheme
+              .copyWith(primary: cp, secondary: cpw, onPrimary: Colors.white),
           textTheme: TextTheme(bodyText2: Fortuna.font(15, false)),
           dialogTheme: DialogTheme(
             titleTextStyle: Fortuna.font(20, true),
             contentTextStyle: Fortuna.font(17, false),
           ),
           scaffoldBackgroundColor: Colors.white,
-          splashColor: const Color(0x444CAF50), // 0x44F44336
+          splashColor: cpw, // 0x44F44336
         )
       : ThemeData(
           primaryColor: cpd,
-          colorScheme: ThemeData.dark().colorScheme.copyWith(
-              primary: cpd,
-              secondary: const Color(0xFF670D06),
-              onPrimary: Colors.white),
+          colorScheme: ThemeData.dark()
+              .colorScheme
+              .copyWith(primary: cpd, secondary: cwd, onPrimary: Colors.white),
           textTheme: TextTheme(bodyText2: Fortuna.font(15)),
           dialogTheme: DialogTheme(
             titleTextStyle: Fortuna.font(20, true),
             contentTextStyle: Fortuna.font(17),
           ),
           scaffoldBackgroundColor: Colors.black,
-          splashColor: const Color(0x444CAF50),
+          splashColor: cwd,
         );
   // TODO: These values do NOT change when system night mode is changed!
 
   runApp(MaterialApp(
-    title: dict[Config.lang]!["appName"]!,
+    title: s('appName'),
     theme: theme, //themeMode: ThemeMode.system,
     debugShowCheckedModeBanner: false,
     home: const Fortuna(),
@@ -60,9 +62,7 @@ class Fortuna extends StatelessWidget {
   static late DateTime calendar;
   static late String luna;
   static bool lunaChanged = false;
-
-  static final panelGKey = GlobalKey();
-  static final lunaGKey = GlobalKey();
+  static String l = "en";
 
   static List<double?> emptyLuna() =>
       [for (var i = 1; i <= calendar.defPos() + 1; i++) null];
@@ -86,7 +86,7 @@ class Fortuna extends StatelessWidget {
     if (!lunaChanged) {
       calendar = DateTime.now();
       luna = calendar.toKey();
-      // setState on second and later onResumes
+      // setState on second+ onResumes
     }
     if (vita?[luna] == null) vita?[luna] = emptyLuna();
 
@@ -95,11 +95,17 @@ class Fortuna extends StatelessWidget {
       stored?.exists().then((exists) {
         if (exists)
           stored?.readAsString().then((json) {
-            vita = jsonDecode(json);
-            // TODO: lunaGKey.currentState?.setState(() {});
+            final data = new Map<String, List<dynamic>>.from(jsonDecode(json));
+            data.forEach((key, value) {
+              List<dynamic> rawLuna = value;
+              List<double?> newLuna = <double?>[];
+              for (final v in rawLuna) newLuna.add(v);
+              vita![key] = newLuna;
+            });
+            Grid.id.currentState?.setState(() {});
           });
         else
-          vita?.save(stored);
+          vita?.save();
       });
     });
 
@@ -115,7 +121,7 @@ class Fortuna extends StatelessWidget {
         toolbarHeight: 60,
         backgroundColor: Theme.of(context).primaryColor,
         title: Text(
-          dict[Config.lang]!["appName"]!,
+          s('appName'),
           style: const TextStyle(fontFamily: 'MorrisRoman', fontSize: 28),
         ),
       ),
@@ -129,13 +135,13 @@ class Fortuna extends StatelessWidget {
                 context: context,
                 barrierDismissible: false,
                 builder: (BuildContext context) => AlertDialog(
-                  title: Text(dict[Config.lang]!["navAverage"]!),
+                  title: Text(s('navAverage')),
                   content: const Text('1.54363'),
                   actionsAlignment: MainAxisAlignment.start,
-                  actions: <Widget>[
+                  actions: <MaterialButton>[
                     MaterialButton(
                       child: Text(
-                        dict[Config.lang]!["ok"]!,
+                        s('ok'),
                         style: Theme.of(context).textTheme.bodyText2,
                       ),
                       onPressed: () => Navigator.of(context).pop(),
@@ -146,7 +152,7 @@ class Fortuna extends StatelessWidget {
               child: ListTile(
                 leading: Icon(Icons.calculate_sharp,
                     color: Theme.of(context).colorScheme.onPrimary),
-                title: Text(dict[Config.lang]!["navAverage"]!, style: navStyle),
+                title: Text(s('navAverage'), style: navStyle),
               ),
             ),
             InkWell(
@@ -154,7 +160,7 @@ class Fortuna extends StatelessWidget {
               child: ListTile(
                 leading: Icon(Icons.import_export,
                     color: Theme.of(context).colorScheme.onPrimary),
-                title: Text(dict[Config.lang]!["navExport"]!, style: navStyle),
+                title: Text(s('navExport'), style: navStyle),
               ),
             ),
             InkWell(
@@ -162,26 +168,23 @@ class Fortuna extends StatelessWidget {
               child: ListTile(
                 leading: Icon(Icons.import_export,
                     color: Theme.of(context).colorScheme.onPrimary),
-                title: Text(dict[Config.lang]!["navImport"]!, style: navStyle),
+                title: Text(s('navImport'), style: navStyle),
               ),
             ),
           ],
         ),
       ),
-      body: ScrollConfiguration(
-        behavior: const ScrollBehavior(),
-        child: GlowingOverscrollIndicator(
-          axisDirection: AxisDirection.down,
-          color: Theme.of(context).splashColor,
-          child: ListView(children: [Panel(), Flexible(child: Luna())]),
-        ),
-      ),
+      body: ListView(children: [Panel(), Flexible(child: Grid())]),
     );
   }
 }
 
 class Panel extends StatefulWidget {
-  Panel() : super(key: Fortuna.panelGKey);
+  Panel() : super(key: id);
+
+  static final id = GlobalKey();
+  static String annus = Fortuna.calendar.year.toString();
+  static int luna = Fortuna.calendar.month;
 
   @override
   State<StatefulWidget> createState() => PanelState();
@@ -201,13 +204,15 @@ class PanelState extends State<Panel> {
                   .map<DropdownMenuItem<int>>(
                       (int value) => DropdownMenuItem<int>(
                             value: value,
-                            child: Text(
-                              gregorianMonths[value - 1],
-                            ),
+                            child: Text(gregorianMonths[value - 1]),
                           ))
                   .toList(),
-              value: Fortuna.calendar.month,
-              onChanged: (i) {},
+              value: Panel.luna,
+              onChanged: (i) {
+                Fortuna.lunaChanged = true;
+                Panel.luna = i!;
+                valuesChanged();
+              },
               style: Fortuna.font(18.5, true),
             ),
           ),
@@ -215,7 +220,7 @@ class PanelState extends State<Panel> {
           SizedBox(
             width: 100,
             child: TextFormField(
-              initialValue: Fortuna.calendar.year.toString(),
+              initialValue: Panel.annus,
               maxLength: 4,
               maxLines: 1,
               textAlign: TextAlign.left,
@@ -225,24 +230,41 @@ class PanelState extends State<Panel> {
                 counterText: "",
                 border: InputBorder.none,
               ),
-              onChanged: (s) {},
+              onChanged: (s) {
+                if (s.length != 4) return;
+                Panel.annus = s;
+                valuesChanged();
+              },
             ),
           ),
         ],
       ),
     );
   }
+
+  void valuesChanged() {
+    Panel.id.currentState?.setState(() {});
+    Fortuna.luna = "${z(Panel.annus, 4)}.${z(Panel.luna)}";
+    Fortuna.calendar = makeCalendar(Fortuna.luna);
+    Grid.id.currentState?.setState(() {});
+  }
 }
 
-class Luna extends StatefulWidget {
-  Luna() : super(key: Fortuna.lunaGKey);
+class Grid extends StatefulWidget {
+  Grid() : super(key: id);
+
+  static final id = GlobalKey();
 
   @override
-  State<StatefulWidget> createState() => LunaState();
+  State<StatefulWidget> createState() => GridState();
 }
 
-class LunaState extends State<Luna> {
-  List<double?> luna = Fortuna.vita![Fortuna.luna]!;
+class GridState extends State<Grid> {
+  List<double?> getLuna() {
+    if (Fortuna.vita![Fortuna.luna] == null)
+      Fortuna.vita![Fortuna.luna] = Fortuna.emptyLuna();
+    return Fortuna.vita![Fortuna.luna]!;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -258,13 +280,12 @@ class LunaState extends State<Luna> {
       shrinkWrap: true,
       crossAxisCount: 5,
       children: days.map((i) {
-        double? score = luna[i] ?? luna.getDefault();
-        bool isEstimated = luna[i] == null && luna.getDefault() != null;
+        double? score = getLuna()[i] ?? getLuna().getDefault();
+        bool isEstimated =
+            getLuna()[i] == null && getLuna().getDefault() != null;
 
         return InkWell(
-          onTap: () {
-            luna.changeVar(i);
-          },
+          onTap: () => getLuna().changeVar(context, i),
           child: Container(
             decoration: BoxDecoration(
                 border: Border.all(
@@ -289,3 +310,5 @@ class LunaState extends State<Luna> {
     );
   }
 }
+
+String s(String key) => dict[Fortuna.l]![key]!;
