@@ -44,7 +44,7 @@ const gregorianMonths = [
   'December'
 ];
 
-const jalaliMonths = [
+/*const jalaliMonths = [
   'Farvardin',
   'Ordibehesht',
   'Khordad',
@@ -57,7 +57,7 @@ const jalaliMonths = [
   'Dey',
   'Bahman',
   'Esfand'
-];
+];*/
 
 const romanNumbers = [
   'I',
@@ -90,6 +90,5 @@ const romanNumbers = [
   'XXVIII',
   'XXIX',
   'XXX',
-  'XXXI',
-  'XXXII'
+  'XXXI'
 ];

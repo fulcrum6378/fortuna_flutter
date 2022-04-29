@@ -15,6 +15,18 @@ extension VitaUtils on Vita {
   void save() {
     Fortuna.stored?.writeAsString(jsonEncode(this));
   }
+
+  double mean() {
+    final scores = <double>[];
+    forEach((key, luna) {
+      final cal = makeCalendar(key);
+      for (var v = 0; v <= cal.lunaMaxima(); v++) {
+        final score = luna[v] ?? luna[cal.defPos()];
+        if (score != null) scores.add(score);
+      }
+    });
+    return (scores.length == 0) ? 0 : (scores.sum() / scores.length);
+  }
 }
 
 extension LunaUtils on List<double?> {
@@ -30,7 +42,12 @@ extension LunaUtils on List<double?> {
     showCupertinoModalPopup(
         context: c,
         builder: (BuildContext context) {
-          selectedVar = 6;
+          int? newVar;
+          if (this[i] != null) newVar = scoreToVariabilis(this[i]!);
+          if (this[Fortuna.calendar.defPos()] != null)
+            newVar = scoreToVariabilis(this[Fortuna.calendar.defPos()]!);
+          if (newVar == null) newVar = 6;
+          selectedVar = newVar;
 
           return AlertDialog(
             title: Text(s('variabilis') +
@@ -45,13 +62,14 @@ extension LunaUtils on List<double?> {
                     FixedExtentScrollController(initialItem: selectedVar),
                 useMagnifier: true,
                 magnification: 2,
+                squeeze: 0.7,
                 children: [
                   for (var i = 0; i <= 12; i++)
                     Padding(
                       padding: EdgeInsets.symmetric(vertical: 4),
                       child: Text(
-                        "${variabilisToScore(i)}",
-                        style: Fortuna.font(18, true),
+                        "${variabilisToScore(i).showScore()}",
+                        style: Fortuna.font(18, bold: true),
                       ),
                     )
                 ],
@@ -99,6 +117,16 @@ extension LunaUtils on List<double?> {
     this[i] = score;
     Fortuna.vita!.save();
     Grid.id.currentState?.setState(() {});
+    Panel.id.currentState?.setState(() {});
+  }
+
+  double mean(DateTime cal) {
+    final scores = <double>[];
+    for (var v = 0; v <= cal.lunaMaxima(); v++) {
+      final score = this[v] ?? this[cal.defPos()];
+      if (score != null) scores.add(score);
+    }
+    return (scores.length == 0) ? 0 : (scores.sum() / scores.length);
   }
 }
 
@@ -116,7 +144,7 @@ extension CalendarKey on DateTime {
 
   int lunaMaxima() => daysInMonth();
 
-  int defPos() => 32;
+  int defPos() => 31;
 }
 
 String z(Object? n, [int ideal = 2]) {
@@ -131,6 +159,9 @@ DateTime makeCalendar(String luna) {
 }
 
 extension ScoreUtils on double? {
+  // ignore: non_constant_identifier_names
+  static double MAX_RANGE = 3.0;
+
   String showScore() => (this != 0) ? (this?.toString() ?? "_") : "0";
 }
 
@@ -138,3 +169,11 @@ int scoreToVariabilis(double score) => (-(score * 2.0) + 6.0).toInt();
 
 double variabilisToScore(int variabilis) =>
     -(variabilis.toDouble() - 6.0) / 2.0;
+
+extension Sum on List<num> {
+  num sum() {
+    num value = 0;
+    for (var i = 0; i < length; i++) value += this[i];
+    return value;
+  }
+}

@@ -1,7 +1,7 @@
 name: fortuna
 description: An application of the Hedonist philosophy.
 publish_to: 'none'
-version: 1.0.0
+version: 1.3.0
 environment:
   sdk: ">=2.16.0 <3.0.0"
 
@@ -10,8 +10,10 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
-  time_machine: ^0.9.17
+  #time_machine: ^0.9.17
   path_provider: ^2.0.9
+  #share: ^2.0.4
+  #file_picker: ^4.5.1
 
 flutter:
   uses-material-design: true

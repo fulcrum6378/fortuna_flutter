@@ -7,42 +7,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
+//import 'package:file_picker/file_picker.dart';
+//import 'package:share/share.dart';
+
 import 'dict.dart';
 import 'vita.dart';
 
 void main() {
-  const Color cp = Color(0xFF4CAF50),
-      cpd = Color(0xFF034C06),
-      cpw = Color(0x444CAF50),
-      cs = Color(0xFFF44336),
-      csd = Color(0xFF670D06),
-      cwd = Color(0x44FFFFFF);
   ThemeData theme = !Fortuna.night()
       ? ThemeData(
-          primaryColor: cp,
-          colorScheme: ThemeData()
-              .colorScheme
-              .copyWith(primary: cp, secondary: cpw, onPrimary: Colors.white),
-          textTheme: TextTheme(bodyText2: Fortuna.font(15, false)),
+          primaryColor: Fortuna.cp,
+          colorScheme: ThemeData().colorScheme.copyWith(
+              primary: Fortuna.cp,
+              secondary: Fortuna.cpw,
+              onPrimary: Colors.white),
+          textTheme: TextTheme(bodyText2: Fortuna.font(15, bold: false)),
           dialogTheme: DialogTheme(
-            titleTextStyle: Fortuna.font(20, true),
-            contentTextStyle: Fortuna.font(17, false),
+            titleTextStyle: Fortuna.font(20, bold: true),
+            contentTextStyle: Fortuna.font(17),
           ),
           scaffoldBackgroundColor: Colors.white,
-          splashColor: cpw, // 0x44F44336
+          splashColor: Fortuna.cpw, // 0x44F44336
         )
       : ThemeData(
-          primaryColor: cpd,
-          colorScheme: ThemeData.dark()
-              .colorScheme
-              .copyWith(primary: cpd, secondary: cwd, onPrimary: Colors.white),
+          primaryColor: Fortuna.cpd,
+          colorScheme: ThemeData.dark().colorScheme.copyWith(
+              primary: Fortuna.cpd,
+              secondary: Fortuna.cwd,
+              onPrimary: Colors.white),
           textTheme: TextTheme(bodyText2: Fortuna.font(15)),
           dialogTheme: DialogTheme(
-            titleTextStyle: Fortuna.font(20, true),
+            titleTextStyle: Fortuna.font(20, bold: true),
             contentTextStyle: Fortuna.font(17),
           ),
           scaffoldBackgroundColor: Colors.black,
-          splashColor: cwd,
+          splashColor: Fortuna.cwd,
         );
   // TODO: These values do NOT change when system night mode is changed!
 
@@ -67,18 +66,25 @@ class Fortuna extends StatelessWidget {
   static List<double?> emptyLuna() =>
       [for (var i = 1; i <= calendar.defPos() + 1; i++) null];
 
-  static thisLuna() => vita?[luna] ?? emptyLuna();
+  static List<double?> thisLuna() => vita?[luna] ?? emptyLuna();
 
   static bool night() =>
       WidgetsBinding.instance?.window.platformBrightness == Brightness.dark;
 
-  static TextStyle font(double size, [bool bold = false, Color? color]) =>
+  static TextStyle font(double size, {bool bold = false, Color? color}) =>
       TextStyle(
         color: color ?? Color(!Fortuna.night() ? 0xFF777777 : 0xFF670D06),
         fontFamily: 'Quattrocento',
         fontWeight: bold ? FontWeight.w800 : FontWeight.w400,
         fontSize: size,
       );
+
+  static const Color cp = Color(0xFF4CAF50),
+      cpd = Color(0xFF034C06),
+      cpw = Color(0x444CAF50),
+      cs = Color(0xFFF44336),
+      csd = Color(0xFF670D06),
+      cwd = Color(0x44FFFFFF);
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +108,7 @@ class Fortuna extends StatelessWidget {
               for (final v in rawLuna) newLuna.add(v);
               vita![key] = newLuna;
             });
+            Panel.id.currentState?.setState(() {});
             Grid.id.currentState?.setState(() {});
           });
         else
@@ -109,8 +116,8 @@ class Fortuna extends StatelessWidget {
       });
     });
 
-    TextStyle navStyle =
-        Fortuna.font(19, true, Theme.of(context).colorScheme.onPrimary);
+    TextStyle navStyle = Fortuna.font(19,
+        bold: true, color: Theme.of(context).colorScheme.onPrimary);
 
     return Scaffold(
       appBar: AppBar(
@@ -133,10 +140,9 @@ class Fortuna extends StatelessWidget {
             InkWell(
               onTap: () => showDialog<String>(
                 context: context,
-                barrierDismissible: false,
                 builder: (BuildContext context) => AlertDialog(
                   title: Text(s('navAverage')),
-                  content: const Text('1.54363'),
+                  content: Text(Fortuna.vita?.mean().toString() ?? ''),
                   actionsAlignment: MainAxisAlignment.start,
                   actions: <MaterialButton>[
                     MaterialButton(
@@ -156,7 +162,12 @@ class Fortuna extends StatelessWidget {
               ),
             ),
             InkWell(
-              onTap: () {},
+              onTap: null,
+              /*() {
+                if (stored != null)
+                  Share.shareFiles([stored!.path],
+                      text: 'fortuna', mimeTypes: ['application/json']);
+              }*/
               child: ListTile(
                 leading: Icon(Icons.import_export,
                     color: Theme.of(context).colorScheme.onPrimary),
@@ -164,7 +175,16 @@ class Fortuna extends StatelessWidget {
               ),
             ),
             InkWell(
-              onTap: () {},
+              onTap: null,
+              /*() {
+                FilePicker.platform
+                    .pickFiles(allowedExtensions: ['json']).then((result) {
+                  if (result == null) return;
+                  File(result.files.single.path!).readAsString().then((value) {
+                    jsonDecode(value);
+                  });
+                });
+              }*/
               child: ListTile(
                 leading: Icon(Icons.import_export,
                     color: Theme.of(context).colorScheme.onPrimary),
@@ -193,52 +213,76 @@ class Panel extends StatefulWidget {
 class PanelState extends State<Panel> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 30),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          DropdownButtonHideUnderline(
-            child: DropdownButton<int>(
-              items: [for (var i = 1; i <= 12; i++) i] // change 12 in Hebrew
-                  .map<DropdownMenuItem<int>>(
-                      (int value) => DropdownMenuItem<int>(
-                            value: value,
-                            child: Text(gregorianMonths[value - 1]),
-                          ))
-                  .toList(),
-              value: Panel.luna,
-              onChanged: (i) {
-                Fortuna.lunaChanged = true;
-                Panel.luna = i!;
-                valuesChanged();
-              },
-              style: Fortuna.font(18.5, true),
-            ),
-          ),
-          const SizedBox(width: 30),
-          SizedBox(
-            width: 100,
-            child: TextFormField(
-              initialValue: Panel.annus,
-              maxLength: 4,
-              maxLines: 1,
-              textAlign: TextAlign.left,
-              keyboardType: TextInputType.number,
-              style: Fortuna.font(19.5, true),
-              decoration: InputDecoration(
-                counterText: "",
-                border: InputBorder.none,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 40, bottom: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  items: [
+                    for (var i = 1; i <= 12; i++) i
+                  ] // change 12 in Hebrew
+                      .map<DropdownMenuItem<int>>(
+                          (int value) => DropdownMenuItem<int>(
+                                value: value,
+                                child: Text(gregorianMonths[value - 1]),
+                              ))
+                      .toList(),
+                  value: Panel.luna,
+                  onChanged: (i) {
+                    Fortuna.lunaChanged = true;
+                    Panel.luna = i!;
+                    valuesChanged();
+                  },
+                  style: Fortuna.font(19, bold: true),
+                ),
               ),
-              onChanged: (s) {
-                if (s.length != 4) return;
-                Panel.annus = s;
-                valuesChanged();
-              },
-            ),
+              const SizedBox(width: 21),
+              SizedBox(
+                width: 54,
+                child: TextFormField(
+                  initialValue: Panel.annus,
+                  maxLength: 4,
+                  maxLines: 1,
+                  textAlign: TextAlign.left,
+                  keyboardType: TextInputType.number,
+                  style: Fortuna.font(20, bold: true),
+                  decoration: InputDecoration(
+                    counterText: "",
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (s) {
+                    if (s.length != 4) return;
+                    Panel.annus = s;
+                    valuesChanged();
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              MaterialButton(
+                child: Text(
+                  Fortuna.thisLuna()[Fortuna.calendar.defPos()].showScore(),
+                  style: Fortuna.font(16),
+                ),
+                onPressed: () {
+                  Fortuna.thisLuna()
+                      .changeVar(context, Fortuna.calendar.defPos());
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Text(
+            Fortuna.thisLuna().mean(Fortuna.calendar).toString(),
+            style: Fortuna.font(15),
+          ),
+        ),
+      ],
     );
   }
 
@@ -268,26 +312,35 @@ class GridState extends State<Grid> {
 
   @override
   Widget build(BuildContext context) {
-    //DateTime now = DateTime.now();
-    List<int> days = [];
-
-    for (var i = 0; i < 31; i++) {
-      days.add(i);
-    }
-
     return GridView.count(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       crossAxisCount: 5,
-      children: days.map((i) {
+      children:
+          [for (var i = 0; i < Fortuna.calendar.lunaMaxima(); i++) i].map((i) {
         double? score = getLuna()[i] ?? getLuna().getDefault();
         bool isEstimated =
             getLuna()[i] == null && getLuna().getDefault() != null;
+
+        Color bg, tc;
+        if (score != null && score > 0) {
+          tc = Theme.of(context).colorScheme.onPrimary;
+          bg = Fortuna.cp
+              .withAlpha(((score / ScoreUtils.MAX_RANGE) * 256).toInt() - 1);
+        } else if (score != null && score < 0) {
+          tc = Theme.of(context).colorScheme.onPrimary;
+          bg = Fortuna.cs
+              .withAlpha(((-score / ScoreUtils.MAX_RANGE) * 256).toInt() - 1);
+        } else {
+          tc = Theme.of(context).textTheme.bodyText2!.color!;
+          bg = Colors.transparent;
+        }
 
         return InkWell(
           onTap: () => getLuna().changeVar(context, i),
           child: Container(
             decoration: BoxDecoration(
+                color: bg,
                 border: Border.all(
                     width: 0.5,
                     color: !Fortuna.night()
@@ -296,11 +349,11 @@ class GridState extends State<Grid> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(romanNumbers[i], style: Fortuna.font(18)),
+                Text(romanNumbers[i], style: Fortuna.font(18, color: tc)),
                 const SizedBox(height: 3),
                 Text(
                   (isEstimated ? "c. " : "") + score.showScore(),
-                  style: Fortuna.font(13),
+                  style: Fortuna.font(13, color: tc),
                 ),
               ],
             ),

@@ -130,13 +130,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
-  time_machine:
-    dependency: "direct dev"
-    description:
-      name: time_machine
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.9.17"
   typed_data:
     dependency: transitive
     description:
