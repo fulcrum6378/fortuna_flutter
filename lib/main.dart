@@ -3,12 +3,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-
-//import 'package:file_picker/file_picker.dart';
-//import 'package:share/share.dart';
+import 'package:share/share.dart';
 
 import 'dict.dart';
 import 'vita.dart';
@@ -97,7 +96,7 @@ class Fortuna extends StatelessWidget {
     if (vita?[luna] == null) vita?[luna] = emptyLuna();
 
     getApplicationSupportDirectory().then((dir) {
-      stored = File('${dir.path}/vita.json');
+      stored = File('${dir.path}/fortuna.json');
       stored?.exists().then((exists) {
         if (exists)
           stored?.readAsString().then((json) {
@@ -162,12 +161,11 @@ class Fortuna extends StatelessWidget {
               ),
             ),
             InkWell(
-              onTap: null,
-              /*() {
+              onTap: () {
                 if (stored != null)
                   Share.shareFiles([stored!.path],
                       text: 'fortuna', mimeTypes: ['application/json']);
-              }*/
+              },
               child: ListTile(
                 leading: Icon(Icons.import_export,
                     color: Theme.of(context).colorScheme.onPrimary),
@@ -175,16 +173,16 @@ class Fortuna extends StatelessWidget {
               ),
             ),
             InkWell(
-              onTap: null,
-              /*() {
+              onTap: () {
                 FilePicker.platform
                     .pickFiles(allowedExtensions: ['json']).then((result) {
                   if (result == null) return;
                   File(result.files.single.path!).readAsString().then((value) {
                     jsonDecode(value);
+                    // TODO COMPLETE IT
                   });
                 });
-              }*/
+              },
               child: ListTile(
                 leading: Icon(Icons.import_export,
                     color: Theme.of(context).colorScheme.onPrimary),
@@ -194,7 +192,16 @@ class Fortuna extends StatelessWidget {
           ],
         ),
       ),
-      body: ListView(children: [Panel(), Flexible(child: Grid())]),
+      body: ListView(
+        children: [
+          Panel(),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: 580,
+            child: Grid(),
+          ),
+        ],
+      ),
     );
   }
 }
