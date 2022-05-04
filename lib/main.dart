@@ -197,7 +197,8 @@ class Fortuna extends StatelessWidget {
           Panel(),
           SizedBox(
             width: MediaQuery.of(context).size.width,
-            height: 580,
+            height: GridState.cellSize(context) *
+                ((GridState.cellsInRow(context) == 5) ? 7 : 4),
             child: Grid(),
           ),
         ],
@@ -317,12 +318,18 @@ class GridState extends State<Grid> {
     return Fortuna.vita![Fortuna.luna]!;
   }
 
+  static cellsInRow(BuildContext c) =>
+      (MediaQuery.of(c).size.width > 1000) ? 10 : 5;
+
+  static cellSize(BuildContext c) =>
+      MediaQuery.of(c).size.width / cellsInRow(c);
+
   @override
   Widget build(BuildContext context) {
     return GridView.count(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      crossAxisCount: 5,
+      crossAxisCount: cellsInRow(context),
       children:
           [for (var i = 0; i < Fortuna.calendar.lunaMaxima(); i++) i].map((i) {
         double? score = getLuna()[i] ?? getLuna().getDefault();
@@ -349,7 +356,7 @@ class GridState extends State<Grid> {
             decoration: BoxDecoration(
                 color: bg,
                 border: Border.all(
-                    width: 0.5,
+                    width: .5,
                     color: !Fortuna.night()
                         ? const Color(0xFFF0F0F0)
                         : const Color(0xFF252525))),
@@ -372,3 +379,10 @@ class GridState extends State<Grid> {
 }
 
 String s(String key) => dict[Fortuna.l]![key]!;
+
+// Building a Windows app needs Visual Studio installed with its huge size.
+// Building a Linux app needs Linux, a MacOS app needs MacOS.
+
+// Running "flutter create ." will import default files to Android and iOS too!
+// Run "flutter "flutter create --platforms=web ."; Add these arguments in
+// similar situations: "--org=ir.mahdiparastesh.fortuna --project-name=fortuna"
