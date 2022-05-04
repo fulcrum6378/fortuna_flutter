@@ -13,47 +13,42 @@ import 'dict.dart';
 import 'vita.dart';
 
 void main() {
-  ThemeData theme = !Fortuna.night()
-      ? ThemeData(
-          primaryColor: Fortuna.cp,
-          colorScheme: ThemeData().colorScheme.copyWith(
-              primary: Fortuna.cp,
-              secondary: Fortuna.cpw,
-              onPrimary: Colors.white),
-          textTheme: TextTheme(bodyText2: Fortuna.font(15, bold: false)),
-          dialogTheme: DialogTheme(
-            titleTextStyle: Fortuna.font(20, bold: true),
-            contentTextStyle: Fortuna.font(17),
-          ),
-          scaffoldBackgroundColor: Colors.white,
-          splashColor: Fortuna.cpw, // 0x44F44336
-        )
-      : ThemeData(
-          primaryColor: Fortuna.cpd,
-          colorScheme: ThemeData.dark().colorScheme.copyWith(
-              primary: Fortuna.cpd,
-              secondary: Fortuna.cwd,
-              onPrimary: Colors.white),
-          textTheme: TextTheme(bodyText2: Fortuna.font(15)),
-          dialogTheme: DialogTheme(
-            titleTextStyle: Fortuna.font(20, bold: true),
-            contentTextStyle: Fortuna.font(17),
-          ),
-          scaffoldBackgroundColor: Colors.black,
-          splashColor: Fortuna.cwd,
-        );
-  // TODO: These values do NOT change when system night mode is changed!
-
   runApp(MaterialApp(
     title: s('appName'),
-    theme: theme, //themeMode: ThemeMode.system,
+    theme: ThemeData(
+      primaryColor: Fortuna.cp,
+      colorScheme: ThemeData().colorScheme.copyWith(
+          primary: Fortuna.cp, secondary: Fortuna.cpw, onPrimary: Colors.white),
+      textTheme: TextTheme(bodyText2: Fortuna.font(15, night: false)),
+      dialogTheme: DialogTheme(
+        titleTextStyle: Fortuna.font(20, bold: true, night: false),
+        contentTextStyle: Fortuna.font(17, night: false),
+      ),
+      scaffoldBackgroundColor: Colors.white,
+      splashColor: Fortuna.cpw, // 0x44F44336
+    ),
+    darkTheme: ThemeData(
+      primaryColor: Fortuna.cpd,
+      colorScheme: ThemeData.dark().colorScheme.copyWith(
+          primary: Fortuna.cpd,
+          secondary: Fortuna.cwd,
+          onPrimary: Colors.white),
+      textTheme: TextTheme(bodyText2: Fortuna.font(15, night: true)),
+      dialogTheme: DialogTheme(
+        titleTextStyle: Fortuna.font(20, bold: true, night: true),
+        contentTextStyle: Fortuna.font(17, night: true),
+      ),
+      scaffoldBackgroundColor: Colors.black,
+      splashColor: Fortuna.cwd,
+    ),
+    themeMode: ThemeMode.system,
     debugShowCheckedModeBanner: false,
-    home: const Fortuna(),
+    home: Fortuna(),
   ));
 }
 
 class Fortuna extends StatelessWidget {
-  const Fortuna({Key? key}) : super(key: key);
+  Fortuna({Key? key}) : super(key: key);
 
   static File? stored;
   static Vita? vita;
@@ -70,9 +65,11 @@ class Fortuna extends StatelessWidget {
   static bool night() =>
       WidgetsBinding.instance?.window.platformBrightness == Brightness.dark;
 
-  static TextStyle font(double size, {bool bold = false, Color? color}) =>
+  static TextStyle font(double size,
+          {bool bold = false, Color? color, bool? night}) =>
       TextStyle(
-        color: color ?? Color(!Fortuna.night() ? 0xFF777777 : 0xFF670D06),
+        color: color ??
+            Color(!(night ?? Fortuna.night()) ? 0xFF777777 : 0xFFFFFFFF),
         fontFamily: 'Quattrocento',
         fontWeight: bold ? FontWeight.w800 : FontWeight.w400,
         fontSize: size,
@@ -339,11 +336,11 @@ class GridState extends State<Grid> {
         Color bg, tc;
         if (score != null && score > 0) {
           tc = Theme.of(context).colorScheme.onPrimary;
-          bg = Fortuna.cp
+          bg = (!Fortuna.night() ? Fortuna.cp : Fortuna.cpd)
               .withAlpha(((score / ScoreUtils.MAX_RANGE) * 256).toInt() - 1);
         } else if (score != null && score < 0) {
           tc = Theme.of(context).colorScheme.onPrimary;
-          bg = Fortuna.cs
+          bg = (!Fortuna.night() ? Fortuna.cs : Fortuna.csd)
               .withAlpha(((-score / ScoreUtils.MAX_RANGE) * 256).toInt() - 1);
         } else {
           tc = Theme.of(context).textTheme.bodyText2!.color!;

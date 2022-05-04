@@ -57,7 +57,7 @@ extension LunaUtils on List<double?> {
             content: SizedBox(
               height: 200,
               child: CupertinoPicker(
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                backgroundColor: Colors.transparent,
                 scrollController:
                     FixedExtentScrollController(initialItem: selectedVar),
                 useMagnifier: true,
