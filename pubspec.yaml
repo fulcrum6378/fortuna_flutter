@@ -13,7 +13,7 @@ dev_dependencies: # force update their build.gradle
   #time_machine: ^0.9.17
   path_provider: ^2.0.9
   share_plus: ^4.0.7
-  file_picker: ^4.5.1
+  file_picker: ^4.5.1 # comment all permissions in its manifest
   flutter_document_picker: ^5.1.0
   format: ^1.1.1
 

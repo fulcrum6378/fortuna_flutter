@@ -111,8 +111,6 @@ class Fortuna extends StatelessWidget {
         });
       });
 
-    TextStyle navStyle = Fortuna.font(19,
-        bold: true, color: Theme.of(context).colorScheme.onPrimary);
     final systemOverlayStyle = SystemUiOverlayStyle(
       statusBarColor: Theme.of(context).primaryColor,
       systemNavigationBarColor: Theme.of(context).primaryColor,
@@ -134,13 +132,11 @@ class Fortuna extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.only(top: 40),
           children: <InkWell>[
-            InkWell(
-              child: ListTile(
-                leading: Icon(Icons.calculate_sharp,
-                    color: Theme.of(context).colorScheme.onPrimary),
-                title: Text(s('navStat'), style: navStyle),
-              ),
-              onTap: () => showDialog<String>(
+            navButton(
+              context,
+              Icons.calculate_sharp,
+              'navStat',
+              () => showDialog<String>(
                 context: context,
                 builder: (BuildContext context) {
                   final scores = <double>[];
@@ -186,60 +182,44 @@ class Fortuna extends StatelessWidget {
                 },
               ),
             ),
-            InkWell(
-              child: ListTile(
-                leading: Icon(Icons.outbox,
-                    color: Theme.of(context).colorScheme.onPrimary),
-                title: Text(s('navExport'), style: navStyle),
-              ),
-              onTap: () {
-                if (stored != null)
-                  Share.shareFiles([stored!.path],
-                      text: 'fortuna', mimeTypes: ['application/json']);
-                else if (vita != null)
-                  Share.share(jsonEncode(vita), subject: s('appName'));
-              },
-            ),
-            InkWell(
-              child: ListTile(
-                leading: Icon(Icons.move_to_inbox,
-                    color: Theme.of(context).colorScheme.onPrimary),
-                title: Text(s('navImport'), style: navStyle),
-              ),
-              onTap: () {
-                if (kIsWeb)
-                  FilePicker.platform.pickFiles(
-                      type: FileType.custom,
-                      allowedExtensions: ['json']).then((result) {
-                    if (result != null)
-                      importData(context, result.files.single.bytes!);
-                  });
-                else
-                  FlutterDocumentPicker.openDocument(
-                      params: FlutterDocumentPickerParams(
-                          allowedFileExtensions: ['json'],
-                          allowedUtiTypes: ['json'],
-                          allowedMimeTypes: ['application/json'])).then((path) {
-                    if (path == null) return;
-                    if (!path.endsWith(".json")) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(s('nonJson')),
-                          duration: Duration(seconds: 5)));
-                      return;
-                    }
-                    File(path)
-                        .readAsBytes()
-                        .then((bytes) => importData(context, bytes));
-                  });
-              },
-            ),
-            InkWell(
-              child: ListTile(
-                leading: Icon(Icons.help,
-                    color: Theme.of(context).colorScheme.onPrimary),
-                title: Text(s('navHelp'), style: navStyle),
-              ),
-              onTap: () => showDialog<String>(
+            navButton(context, Icons.outbox, 'navExport', () {
+              if (stored != null)
+                Share.shareFiles([stored!.path],
+                    text: 'fortuna', mimeTypes: ['application/json']);
+              else if (vita != null)
+                Share.share(jsonEncode(vita), subject: s('appName'));
+            }),
+            navButton(context, Icons.move_to_inbox, 'navImport', () {
+              if (kIsWeb)
+                FilePicker.platform.pickFiles(
+                    type: FileType.custom,
+                    allowedExtensions: ['json']).then((result) {
+                  if (result != null)
+                    importData(context, result.files.single.bytes!);
+                });
+              else
+                FlutterDocumentPicker.openDocument(
+                    params: FlutterDocumentPickerParams(
+                        allowedFileExtensions: ['json'],
+                        allowedUtiTypes: ['json'],
+                        allowedMimeTypes: ['application/json'])).then((path) {
+                  if (path == null) return;
+                  if (!path.endsWith(".json")) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(s('nonJson')),
+                        duration: Duration(seconds: 5)));
+                    return;
+                  }
+                  File(path)
+                      .readAsBytes()
+                      .then((bytes) => importData(context, bytes));
+                });
+            }),
+            navButton(
+              context,
+              Icons.help,
+              'navHelp',
+              () => showDialog<String>(
                 context: context,
                 builder: (BuildContext context) => AlertDialog(
                   title: Text(s('navHelp')),
@@ -271,6 +251,22 @@ class Fortuna extends StatelessWidget {
       ),
     );
   }
+
+  InkWell navButton(BuildContext context, IconData icon, String title,
+          void Function() onTap) =>
+      InkWell(
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: ListTile(
+            leading: Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
+            title: Text(s(title),
+                style: Fortuna.font(19,
+                    bold: true,
+                    color: Theme.of(context).colorScheme.onPrimary)),
+          ),
+        ),
+        onTap: onTap,
+      );
 
   void importData(BuildContext context, Uint8List bytes) {
     final data = VitaUtils.createFromJson(new String.fromCharCodes(bytes));
