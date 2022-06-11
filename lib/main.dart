@@ -188,7 +188,7 @@ class Fortuna extends StatelessWidget {
             ),
             InkWell(
               child: ListTile(
-                leading: Icon(Icons.import_export,
+                leading: Icon(Icons.outbox,
                     color: Theme.of(context).colorScheme.onPrimary),
                 title: Text(s('navExport'), style: navStyle),
               ),
@@ -200,7 +200,7 @@ class Fortuna extends StatelessWidget {
             ),
             InkWell(
               child: ListTile(
-                leading: Icon(Icons.import_export,
+                leading: Icon(Icons.move_to_inbox,
                     color: Theme.of(context).colorScheme.onPrimary),
                 title: Text(s('navImport'), style: navStyle),
               ),
@@ -234,7 +234,27 @@ class Fortuna extends StatelessWidget {
                 });
               },
             ),
-            // TODO HELP
+            InkWell(
+              child: ListTile(
+                leading: Icon(Icons.help,
+                    color: Theme.of(context).colorScheme.onPrimary),
+                title: Text(s('navHelp'), style: navStyle),
+              ),
+              onTap: () => showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: Text(s('navHelp')),
+                  content: Text(s('help')),
+                  actionsAlignment: MainAxisAlignment.start,
+                  actions: <MaterialButton>[
+                    MaterialButton(
+                      child: Text(s('ok'), style: Theme.of(context).textTheme.bodyText2),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -325,6 +345,8 @@ class PanelState extends State<Panel> {
                   Fortuna.thisLuna()
                       .changeVar(context, Fortuna.calendar.defPos());
                 },
+                // onLongPress: () {},
+                // Apparently not possible in Flutter yet!
               ),
             ],
           ),

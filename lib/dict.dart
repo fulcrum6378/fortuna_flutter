@@ -1,10 +1,6 @@
 const Map<String, Map<String, String>> dict = {
   'en': {
     "appName": "Fortuna",
-    "help": "This is an app designed based on the \"Hedonist\" philosophy!"
-        " It is designed to calculate the amount of pleasure and pain that"
-        " one senses in their life based on Felicific Calculus;"
-        " this app will later be connected to a Dolorimeter device.",
     "variabilis": "Variabilis: ",
     "year": "Year",
     "save": "Save",
@@ -23,14 +19,15 @@ const Map<String, Map<String, String>> dict = {
     "copy": "Copy",
     "nonJson": "Fortuna only supports *.json files!",
     "invalidFile": "This isn't a valid Fortuna file!",
+    "navHelp": "Help",
+    "help": "This app is designed based on the \"Hedonist\" philosophy! "
+        "It\'s used to calculate the amount of pleasure and pain one senses in "
+        "their life.\n\nYou can enter the quality of your life in a scale "
+        "between -3 to +3 for each day.\n\nAlternatively you can estimate the "
+        "number of a whole month using the field right to the year field at "
+        "the top of the page.\n\nThen you can see how much pleasure and pain "
+        "you\'ve sensed overall in your life.",
   },
-  /*'fa': {
-    "appName": "فورتونا",
-    "help": "این اپ بر مبنای فلسفه «لذت گرایی» یا «هِدونیسم» طراحی شده است."
-        " برای این طراحی شده است که مقدار لذت و رنج یک شخص را در طول زندگی"
-        " خویش بر مبنای «فلیسیفیک کلکیولس» بسنجد؛ این اپ بعدا به یک دستگاه"
-        " «دولوریمتر» یا «درد سنج» متصل خواهد شد.",
-  }*/
 };
 
 const gregorianMonths = [
