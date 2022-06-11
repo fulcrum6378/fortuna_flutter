@@ -31,7 +31,7 @@ android {
 
     defaultConfig {
         applicationId "ir.mahdiparastesh.fortuna.flutter"
-        minSdk 16
+        minSdk 19
         targetSdk 32
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

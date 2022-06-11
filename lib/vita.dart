@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'main.dart';
@@ -13,7 +14,20 @@ typedef Vita = Map<String, Luna>;
 
 extension VitaUtils on Vita {
   void save() {
+    if (kIsWeb) return;
     Fortuna.stored?.writeAsString(jsonEncode(this));
+  }
+
+  static Vita createFromJson(String json) {
+    final data = new Map<String, List<dynamic>>.from(jsonDecode(json));
+    final vita = Vita();
+    data.forEach((key, value) {
+      List<dynamic> rawLuna = value;
+      List<double?> newLuna = <double?>[];
+      for (final v in rawLuna) newLuna.add(v);
+      vita[key] = newLuna;
+    });
+    return vita;
   }
 }
 

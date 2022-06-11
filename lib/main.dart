@@ -2,13 +2,16 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_document_picker/flutter_document_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:format/format.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'dict.dart';
 import 'vita.dart';
@@ -93,35 +96,32 @@ class Fortuna extends StatelessWidget {
     }
     if (vita?[luna] == null) vita?[luna] = emptyLuna();
 
-    getApplicationSupportDirectory().then((dir) {
-      stored = File('${dir.path}/fortuna.json');
-      stored?.exists().then((exists) {
-        if (exists)
-          stored?.readAsString().then((json) {
-            final data = new Map<String, List<dynamic>>.from(jsonDecode(json));
-            data.forEach((key, value) {
-              List<dynamic> rawLuna = value;
-              List<double?> newLuna = <double?>[];
-              for (final v in rawLuna) newLuna.add(v);
-              vita![key] = newLuna;
+    if (!kIsWeb)
+      getApplicationSupportDirectory().then((dir) {
+        stored = File('${dir.path}/fortuna.json');
+        stored?.exists().then((exists) {
+          if (exists)
+            stored?.readAsString().then((json) {
+              vita = VitaUtils.createFromJson(json);
+              Panel.id.currentState?.setState(() {});
+              Grid.id.currentState?.setState(() {});
             });
-            Panel.id.currentState?.setState(() {});
-            Grid.id.currentState?.setState(() {});
-          });
-        else
-          vita?.save();
+          else
+            vita?.save();
+        });
       });
-    });
 
     TextStyle navStyle = Fortuna.font(19,
         bold: true, color: Theme.of(context).colorScheme.onPrimary);
+    final systemOverlayStyle = SystemUiOverlayStyle(
+      statusBarColor: Theme.of(context).primaryColor,
+      systemNavigationBarColor: Theme.of(context).primaryColor,
+    );
+    SystemChrome.setSystemUIOverlayStyle(systemOverlayStyle);
 
     return Scaffold(
       appBar: AppBar(
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Theme.of(context).primaryColor,
-          systemNavigationBarColor: Theme.of(context).primaryColor,
-        ),
+        systemOverlayStyle: systemOverlayStyle,
         toolbarHeight: 60,
         backgroundColor: Theme.of(context).primaryColor,
         title: Text(
@@ -196,6 +196,8 @@ class Fortuna extends StatelessWidget {
                 if (stored != null)
                   Share.shareFiles([stored!.path],
                       text: 'fortuna', mimeTypes: ['application/json']);
+                else if (vita != null)
+                  Share.share(jsonEncode(vita), subject: s('appName'));
               },
             ),
             InkWell(
@@ -205,33 +207,30 @@ class Fortuna extends StatelessWidget {
                 title: Text(s('navImport'), style: navStyle),
               ),
               onTap: () {
-                FilePicker.platform // allowedExtensions: ['json']
-                    .pickFiles().then((result) {
-                  if (result == null) return;
-                  if (!result.files.single.path!.endsWith(".json")) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(s('nonJson')),
-                      duration: Duration(seconds: 5),
-                    ));
-                    return;
-                  }
-                  File(result.files.single.path!).readAsString().then((value) {
-                    final data =
-                        new Map<String, List<dynamic>>.from(jsonDecode(value));
-                    if (data.keys.any((k) => k.length != 7)) {
+                if (kIsWeb)
+                  FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['json']).then((result) {
+                    if (result != null)
+                      importData(context, result.files.single.bytes!);
+                  });
+                else
+                  FlutterDocumentPicker.openDocument(
+                      params: FlutterDocumentPickerParams(
+                          allowedFileExtensions: ['json'],
+                          allowedUtiTypes: ['json'],
+                          allowedMimeTypes: ['application/json'])).then((path) {
+                    if (path == null) return;
+                    if (!path.endsWith(".json")) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(s('invalidFile')),
-                        duration: Duration(seconds: 5),
-                      ));
+                          content: Text(s('nonJson')),
+                          duration: Duration(seconds: 5)));
                       return;
                     }
-                    Fortuna.stored?.writeAsString(value);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(s('done')),
-                      duration: Duration(seconds: 3),
-                    ));
+                    File(path)
+                        .readAsBytes()
+                        .then((bytes) => importData(context, bytes));
                   });
-                });
               },
             ),
             InkWell(
@@ -248,7 +247,8 @@ class Fortuna extends StatelessWidget {
                   actionsAlignment: MainAxisAlignment.start,
                   actions: <MaterialButton>[
                     MaterialButton(
-                      child: Text(s('ok'), style: Theme.of(context).textTheme.bodyText2),
+                      child: Text(s('ok'),
+                          style: Theme.of(context).textTheme.bodyText2),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -270,6 +270,21 @@ class Fortuna extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void importData(BuildContext context, Uint8List bytes) {
+    final data = VitaUtils.createFromJson(new String.fromCharCodes(bytes));
+    if (data.keys.any((k) => k.length != 7)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s('invalidFile')), duration: Duration(seconds: 5)));
+      return;
+    }
+    vita = data;
+    vita?.save();
+    Panel.id.currentState?.setState(() {});
+    Grid.id.currentState?.setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s('done')), duration: Duration(seconds: 5)));
   }
 }
 
