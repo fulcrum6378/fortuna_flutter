@@ -26,12 +26,13 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdk 31
+    compileSdk 32
+    buildToolsVersion '33.0.0'
 
     defaultConfig {
         applicationId "ir.mahdiparastesh.fortuna.flutter"
         minSdk 16
-        targetSdk 31
+        targetSdk 32
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -39,12 +40,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
+    kotlinOptions { jvmTarget = '1.8' }
+    sourceSets { main.java.srcDirs += 'src/main/kotlin' }
 
     buildTypes {
         release {

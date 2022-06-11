@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:format/format.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
 
@@ -63,7 +64,7 @@ class Fortuna extends StatelessWidget {
   static List<double?> thisLuna() => vita?[luna] ?? emptyLuna();
 
   static bool night() =>
-      WidgetsBinding.instance?.window.platformBrightness == Brightness.dark;
+      WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
 
   static TextStyle font(double size,
           {bool bold = false, Color? color, bool? night}) =>
@@ -134,58 +135,106 @@ class Fortuna extends StatelessWidget {
           padding: const EdgeInsets.only(top: 40),
           children: <InkWell>[
             InkWell(
-              onTap: () => showDialog<String>(
-                context: context,
-                builder: (BuildContext context) => AlertDialog(
-                  title: Text(s('navAverage')),
-                  content: Text(Fortuna.vita?.mean().toString() ?? ''),
-                  actionsAlignment: MainAxisAlignment.start,
-                  actions: <MaterialButton>[
-                    MaterialButton(
-                      child: Text(
-                        s('ok'),
-                        style: Theme.of(context).textTheme.bodyText2,
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-              ),
               child: ListTile(
                 leading: Icon(Icons.calculate_sharp,
                     color: Theme.of(context).colorScheme.onPrimary),
-                title: Text(s('navAverage'), style: navStyle),
+                title: Text(s('navStat'), style: navStyle),
+              ),
+              onTap: () => showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  final scores = <double>[];
+                  Fortuna.vita?.forEach((key, luna) {
+                    final cal = makeCalendar(key);
+                    for (var v = 0; v <= cal.lunaMaxima(); v++) {
+                      final score = luna[v] ?? luna[cal.defPos()];
+                      if (score != null) scores.add(score);
+                    }
+                  });
+                  final sum = scores.sum();
+                  final text = format(
+                      s('statText'),
+                      ((scores.length == 0)
+                              ? 0.0
+                              : sum.toDouble() / scores.length.toDouble())
+                          .toString(),
+                      sum.toString());
+
+                  final buttonStyle = Theme.of(context).textTheme.bodyText2;
+                  return AlertDialog(
+                    title: Text(s('fortunaStat')),
+                    content: Text(text),
+                    actionsAlignment: MainAxisAlignment.start,
+                    actions: <MaterialButton>[
+                      MaterialButton(
+                        child: Text(s('ok'), style: buttonStyle),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      MaterialButton(
+                        child: Text(s('copy'), style: buttonStyle),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: text));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(s('done')),
+                            duration: Duration(seconds: 2),
+                          ));
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
             InkWell(
-              onTap: () {
-                if (stored != null)
-                  Share.shareFiles([stored!.path],
-                      text: 'fortuna', mimeTypes: ['application/json']);
-              },
               child: ListTile(
                 leading: Icon(Icons.import_export,
                     color: Theme.of(context).colorScheme.onPrimary),
                 title: Text(s('navExport'), style: navStyle),
               ),
+              onTap: () {
+                if (stored != null)
+                  Share.shareFiles([stored!.path],
+                      text: 'fortuna', mimeTypes: ['application/json']);
+              },
             ),
             InkWell(
-              onTap: () {
-                FilePicker.platform
-                    .pickFiles(allowedExtensions: ['json']).then((result) {
-                  if (result == null) return;
-                  File(result.files.single.path!).readAsString().then((value) {
-                    jsonDecode(value);
-                    // TODO COMPLETE IT
-                  });
-                });
-              },
               child: ListTile(
                 leading: Icon(Icons.import_export,
                     color: Theme.of(context).colorScheme.onPrimary),
                 title: Text(s('navImport'), style: navStyle),
               ),
+              onTap: () {
+                FilePicker.platform // allowedExtensions: ['json']
+                    .pickFiles().then((result) {
+                  if (result == null) return;
+                  if (!result.files.single.path!.endsWith(".json")) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(s('nonJson')),
+                      duration: Duration(seconds: 5),
+                    ));
+                    return;
+                  }
+                  File(result.files.single.path!).readAsString().then((value) {
+                    final data =
+                        new Map<String, List<dynamic>>.from(jsonDecode(value));
+                    if (data.keys.any((k) => k.length != 7)) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(s('invalidFile')),
+                        duration: Duration(seconds: 5),
+                      ));
+                      return;
+                    }
+                    Fortuna.stored?.writeAsString(value);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(s('done')),
+                      duration: Duration(seconds: 3),
+                    ));
+                  });
+                });
+              },
             ),
+            // TODO HELP
           ],
         ),
       ),

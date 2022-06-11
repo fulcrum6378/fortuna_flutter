@@ -15,18 +15,6 @@ extension VitaUtils on Vita {
   void save() {
     Fortuna.stored?.writeAsString(jsonEncode(this));
   }
-
-  double mean() {
-    final scores = <double>[];
-    forEach((key, luna) {
-      final cal = makeCalendar(key);
-      for (var v = 0; v <= cal.lunaMaxima(); v++) {
-        final score = luna[v] ?? luna[cal.defPos()];
-        if (score != null) scores.add(score);
-      }
-    });
-    return (scores.length == 0) ? 0 : (scores.sum() / scores.length);
-  }
 }
 
 extension LunaUtils on List<double?> {
@@ -170,9 +158,9 @@ int scoreToVariabilis(double score) => (-(score * 2.0) + 6.0).toInt();
 double variabilisToScore(int variabilis) =>
     -(variabilis.toDouble() - 6.0) / 2.0;
 
-extension Sum on List<num> {
-  num sum() {
-    num value = 0;
+extension Sum on List<double> {
+  double sum() {
+    double value = 0.0;
     for (var i = 0; i < length; i++) value += this[i];
     return value;
   }
