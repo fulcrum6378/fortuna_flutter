@@ -11,6 +11,7 @@ const Map<String, Map<String, String>> dict = {
     "ok": "OK",
     "navExport": "Export to Json",
     "navImport": "Import from Json",
+    "navSend": "Send Json to",
     "done": "Done!",
     "navStat": "Statistics",
     "defValue": "DEFAULT",
@@ -19,6 +20,8 @@ const Map<String, Map<String, String>> dict = {
     "copy": "Copy",
     "nonJson": "Fortuna only supports *.json files!",
     "invalidFile": "This isn't a valid Fortuna file!",
+    "exportNotSupported": "Unfortunately Flutter doesn't support this feature "
+        "yet, you can use the Android version instead!",
     "navHelp": "Help",
     "help": "This app is designed based on the \"Hedonist\" philosophy! "
         "It\'s used to calculate the amount of pleasure and pain one senses in "

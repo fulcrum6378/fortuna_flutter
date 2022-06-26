@@ -5,11 +5,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_document_picker/flutter_document_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_document_picker/flutter_document_picker.dart';
 import 'package:format/format.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -69,11 +70,13 @@ class Fortuna extends StatelessWidget {
   static bool night() =>
       WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
 
+  static Color textColor([bool? night]) =>
+      Color(!(night ?? Fortuna.night()) ? 0xFF777777 : 0xFFFFFFFF);
+
   static TextStyle font(double size,
           {bool bold = false, Color? color, bool? night}) =>
       TextStyle(
-        color: color ??
-            Color(!(night ?? Fortuna.night()) ? 0xFF777777 : 0xFFFFFFFF),
+        color: color ?? textColor(night),
         fontFamily: 'Quattrocento',
         fontWeight: bold ? FontWeight.w800 : FontWeight.w400,
         fontSize: size,
@@ -160,12 +163,8 @@ class Fortuna extends StatelessWidget {
                   return AlertDialog(
                     title: Text(s('fortunaStat')),
                     content: Text(text),
-                    actionsAlignment: MainAxisAlignment.start,
+                    actionsAlignment: MainAxisAlignment.end,
                     actions: <MaterialButton>[
-                      MaterialButton(
-                        child: Text(s('ok'), style: buttonStyle),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
                       MaterialButton(
                         child: Text(s('copy'), style: buttonStyle),
                         onPressed: () {
@@ -177,18 +176,20 @@ class Fortuna extends StatelessWidget {
                           Navigator.of(context).pop();
                         },
                       ),
+                      MaterialButton(
+                        child: Text(s('ok'), style: buttonStyle),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
                     ],
                   );
                 },
               ),
             ),
             navButton(context, Icons.outbox, 'navExport', () {
-              if (stored != null)
-                Share.shareFiles([stored!.path],
-                    text: 'fortuna', mimeTypes: ['application/json']);
-              else if (vita != null)
-                Share.share(jsonEncode(vita), subject: s('appName'));
-            }),
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(s('exportNotSupported')),
+                  duration: Duration(seconds: 10)));
+            }, false),
             navButton(context, Icons.move_to_inbox, 'navImport', () {
               if (kIsWeb)
                 FilePicker.platform.pickFiles(
@@ -215,6 +216,13 @@ class Fortuna extends StatelessWidget {
                       .then((bytes) => importData(context, bytes));
                 });
             }),
+            navButton(context, Icons.send, 'navSend', () {
+              if (stored != null)
+                Share.shareFiles([stored!.path],
+                    text: 'fortuna', mimeTypes: ['application/json']);
+              else if (vita != null)
+                Share.share(jsonEncode(vita), subject: s('appName'));
+            }),
             navButton(
               context,
               Icons.help,
@@ -224,7 +232,7 @@ class Fortuna extends StatelessWidget {
                 builder: (BuildContext context) => AlertDialog(
                   title: Text(s('navHelp')),
                   content: Text(s('help')),
-                  actionsAlignment: MainAxisAlignment.start,
+                  actionsAlignment: MainAxisAlignment.end,
                   actions: <MaterialButton>[
                     MaterialButton(
                       child: Text(s('ok'),
@@ -243,8 +251,8 @@ class Fortuna extends StatelessWidget {
           Panel(),
           SizedBox(
             width: MediaQuery.of(context).size.width,
-            height: GridState.cellSize(context) *
-                ((GridState.cellsInRow(context) == 5) ? 7 : 4),
+            height: (GridState.cellSize(context) / GridState.aspectRatio) *
+                GridState.cellsInColumn(context),
             child: Grid(),
           ),
         ],
@@ -253,16 +261,24 @@ class Fortuna extends StatelessWidget {
   }
 
   InkWell navButton(BuildContext context, IconData icon, String title,
-          void Function() onTap) =>
+          void Function() onTap,
+          [bool isEnabled = true]) =>
       InkWell(
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: ListTile(
-            leading: Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
-            title: Text(s(title),
-                style: Fortuna.font(19,
-                    bold: true,
-                    color: Theme.of(context).colorScheme.onPrimary)),
+        child: Opacity(
+          opacity: isEnabled ? 1 : .5,
+          child: MouseRegion(
+            cursor: isEnabled
+                ? SystemMouseCursors.click
+                : SystemMouseCursors.forbidden,
+            child: ListTile(
+              leading:
+                  Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
+              title: Text(s(title),
+                  style: Fortuna.font(19,
+                      bold: true,
+                      color: Theme.of(context).colorScheme.onPrimary)),
+              enabled: isEnabled,
+            ),
           ),
         ),
         onTap: onTap,
@@ -291,11 +307,19 @@ class Panel extends StatefulWidget {
   static String annus = Fortuna.calendar.year.toString();
   static int luna = Fortuna.calendar.month;
 
+  static void update() {
+    annus = Fortuna.calendar.year.toString();
+    luna = Fortuna.calendar.month;
+  }
+
   @override
   State<StatefulWidget> createState() => PanelState();
 }
 
 class PanelState extends State<Panel> {
+  static final double arrowDistance = 25;
+  String _annus = Panel.annus;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -305,6 +329,14 @@ class PanelState extends State<Panel> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              InkWell(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Icon(Icons.arrow_left, color: Fortuna.textColor()),
+                ),
+                onTap: () => rollCalendar(false),
+              ),
+              SizedBox(width: arrowDistance),
               DropdownButtonHideUnderline(
                 child: DropdownButton<int>(
                   items: [
@@ -329,7 +361,7 @@ class PanelState extends State<Panel> {
               SizedBox(
                 width: 54,
                 child: TextFormField(
-                  initialValue: Panel.annus,
+                  controller: TextEditingController()..text = _annus,
                   maxLength: 4,
                   maxLines: 1,
                   textAlign: TextAlign.left,
@@ -359,6 +391,14 @@ class PanelState extends State<Panel> {
                 // onLongPress: () {},
                 // Apparently not possible in Flutter yet!
               ),
+              SizedBox(width: arrowDistance),
+              InkWell(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Icon(Icons.arrow_right, color: Fortuna.textColor()),
+                ),
+                onTap: () => rollCalendar(true),
+              ),
             ],
           ),
         ),
@@ -379,12 +419,29 @@ class PanelState extends State<Panel> {
     Fortuna.calendar = makeCalendar(Fortuna.luna);
     Grid.id.currentState?.setState(() {});
   }
+
+  void rollCalendar(bool up) {
+    final jiffy = Jiffy(Fortuna.calendar);
+    if (up)
+      jiffy.add(months: 1);
+    else
+      jiffy.subtract(months: 1);
+    Fortuna.calendar = jiffy.dateTime;
+    Fortuna.luna = Fortuna.calendar.toKey();
+    Panel.update();
+    Panel.id.currentState?.setState(() {
+      _annus = Panel.annus;
+    });
+    Grid.id.currentState?.setState(() {});
+  }
 }
 
 class Grid extends StatefulWidget {
   Grid() : super(key: id);
 
   static final id = GlobalKey();
+  static final todayCalendar = DateTime.now();
+  static final todayLuna = todayCalendar.toKey();
 
   @override
   State<StatefulWidget> createState() => GridState();
@@ -397,17 +454,43 @@ class GridState extends State<Grid> {
     return Fortuna.vita![Fortuna.luna]!;
   }
 
-  static cellsInRow(BuildContext c) =>
-      (MediaQuery.of(c).size.width > 1000) ? 10 : 5;
+  static int cellsInRow(BuildContext c) {
+    final screen = MediaQuery.of(c).size.width;
+    if (screen < 900)
+      return 5;
+    else if (screen < 1200)
+      return 7;
+    else
+      return 10;
+  }
+
+  static cellsInColumn(BuildContext c) {
+    switch (GridState.cellsInRow(c)) {
+      case 5:
+        return 8;
+      case 7:
+        return 5;
+      default:
+        return 4;
+    }
+  }
 
   static cellSize(BuildContext c) =>
       MediaQuery.of(c).size.width / cellsInRow(c);
+  static final aspectRatio = .8;
 
   @override
   Widget build(BuildContext context) {
+    final normalBorder = Border.all(
+        width: .5,
+        color: !Fortuna.night()
+            ? const Color(0xFFF0F0F0)
+            : const Color(0xFF252525));
+
     return GridView.count(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
+      childAspectRatio: aspectRatio,
       crossAxisCount: cellsInRow(context),
       children:
           [for (var i = 0; i < Fortuna.calendar.lunaMaxima(); i++) i].map((i) {
@@ -434,11 +517,15 @@ class GridState extends State<Grid> {
           child: Container(
             decoration: BoxDecoration(
                 color: bg,
-                border: Border.all(
-                    width: .5,
-                    color: !Fortuna.night()
-                        ? const Color(0xFFF0F0F0)
-                        : const Color(0xFF252525))),
+                border: !(Fortuna.luna == Grid.todayLuna &&
+                        Grid.todayCalendar.day == i + 1)
+                    ? normalBorder
+                    : Border.all(
+                        width: 5,
+                        color: score != null
+                            ? Fortuna.textColor()
+                            : Color(0x44F44336),
+                      )),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
