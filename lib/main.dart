@@ -13,8 +13,10 @@ import 'package:format/format.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dict.dart';
+import 'numerals.dart';
 import 'vita.dart';
 
 void main() {
@@ -61,6 +63,7 @@ class Fortuna extends StatelessWidget {
   static late String luna;
   static bool lunaChanged = false;
   static String l = "en";
+  static SharedPreferences? sp;
 
   static List<double?> emptyLuna() =>
       [for (var i = 1; i <= calendar.defPos() + 1; i++) null];
@@ -120,6 +123,11 @@ class Fortuna extends StatelessWidget {
     );
     SystemChrome.setSystemUIOverlayStyle(systemOverlayStyle);
 
+    SharedPreferences.getInstance().then((value) {
+      sp = value;
+      Grid.id.currentState?.setState(() {});
+    });
+
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: systemOverlayStyle,
@@ -129,6 +137,43 @@ class Fortuna extends StatelessWidget {
           s('appName'),
           style: const TextStyle(fontFamily: 'MorrisRoman', fontSize: 28),
         ),
+        actions: <Widget>[
+          PopupMenuButton<NumeralType>(
+              icon: Icon(Icons.numbers),
+              tooltip: s('numerals'),
+              onSelected: (NumeralType item) {
+                Fortuna.sp?.setString(BaseNumeral.key, item.id);
+                Grid.id.currentState?.setState(() {});
+              },
+              itemBuilder: (BuildContext c) =>
+                  [for (int i = 0; i < BaseNumeral.all.length; i++) i].map((i) {
+                    NumeralType type = BaseNumeral.all[i];
+                    String selectedType =
+                        Fortuna.sp?.getString(BaseNumeral.key) ??
+                            BaseNumeral.defType;
+
+                    return PopupMenuItem<NumeralType>(
+                      value: type,
+                      child: Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                s(type.id),
+                                style: Theme.of(c).textTheme.bodyText2,
+                              ),
+                            ),
+                            Checkbox(
+                              value: type.id == selectedType,
+                              onChanged: (str) {},
+                              activeColor: Fortuna.textColor(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList()),
+        ],
       ),
       drawer: Drawer(
         backgroundColor: Theme.of(context).primaryColor,
@@ -373,6 +418,7 @@ class PanelState extends State<Panel> {
                   ),
                   onChanged: (s) {
                     if (s.length != 4) return;
+                    _annus = s;
                     Panel.annus = s;
                     valuesChanged();
                   },
@@ -512,6 +558,13 @@ class GridState extends State<Grid> {
           bg = Colors.transparent;
         }
 
+        String selectedNumType =
+            Fortuna.sp?.getString(BaseNumeral.key) ?? BaseNumeral.defType;
+        bool enlarge = BaseNumeral.all
+            .firstWhere((element) => element.id == selectedNumType,
+                orElse: () => BaseNumeral.all.first)
+            .enlarge;
+
         return InkWell(
           onTap: () => getLuna().changeVar(context, i),
           child: Container(
@@ -522,14 +575,17 @@ class GridState extends State<Grid> {
                     ? normalBorder
                     : Border.all(
                         width: 5,
-                        color: score != null
-                            ? Fortuna.textColor()
-                            : Color(0x44F44336),
+                        color:
+                            Color(!Fortuna.night() ? 0x44000000 : 0x44FFFFFF),
                       )),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(romanNumbers[i], style: Fortuna.font(18, color: tc)),
+                Text(
+                  BaseNumeral.construct(selectedNumType, i + 1)?.toString() ??
+                      (i + 1).toString(),
+                  style: Fortuna.font(!enlarge ? 18 : 34, color: tc),
+                ),
                 const SizedBox(height: 3),
                 Text(
                   (isEstimated ? "c. " : "") + score.showScore(),

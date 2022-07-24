@@ -15,7 +15,7 @@ const Map<String, Map<String, String>> dict = {
     "done": "Done!",
     "navStat": "Statistics",
     "defValue": "DEFAULT",
-    "fortunaStat": "Fortuna Statistics",
+    "fortunaStat": "Statistics",
     "statText": "Average of Total: {0}\nSum: {1}",
     "copy": "Copy",
     "nonJson": "Fortuna only supports *.json files!",
@@ -30,6 +30,16 @@ const Map<String, Map<String, String>> dict = {
         "number of a whole month using the field right to the year field at "
         "the top of the page.\n\nThen you can see how much pleasure and pain "
         "you\'ve sensed overall in your life.",
+
+    // Numerals
+    "numerals": "Numerals",
+    "arabic": "Arabic",
+    "roman": "Roman",
+    "brahmi": "Brahmi",
+    "oldPersian": "Old Persian",
+    "etruscan": "Etruscan",
+    "attic": "Attic",
+    "hieroglyph": "Hieroglyph"
   },
 };
 
@@ -47,7 +57,6 @@ const gregorianMonths = [
   'November',
   'December'
 ];
-
 /*const persianMonths = [
   'Farvardin',
   'Ordibehesht',
@@ -62,37 +71,3 @@ const gregorianMonths = [
   'Bahman',
   'Esfand'
 ];*/
-
-const romanNumbers = [
-  'I',
-  'II',
-  'III',
-  'IV',
-  'V',
-  'VI',
-  'VII',
-  'VIII',
-  'IX',
-  'X',
-  'XI',
-  'XII',
-  'XIII',
-  'XIV',
-  'XV',
-  'XVI',
-  'XVII',
-  'XVIII',
-  'XIX',
-  'XX',
-  'XXI',
-  'XXII',
-  'XXIII',
-  'XXIV',
-  'XXV',
-  'XXVI',
-  'XXVII',
-  'XXVIII',
-  'XXIX',
-  'XXX',
-  'XXXI'
-];
