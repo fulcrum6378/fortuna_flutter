@@ -127,6 +127,8 @@ class Fortuna extends StatelessWidget {
       sp = value;
       Grid.id.currentState?.setState(() {});
     });
+    String selectedNumType =
+        Fortuna.sp?.getString(BaseNumeral.key) ?? BaseNumeral.defType;
 
     return Scaffold(
       appBar: AppBar(
@@ -141,6 +143,7 @@ class Fortuna extends StatelessWidget {
           PopupMenuButton<NumeralType>(
               icon: Icon(Icons.numbers),
               tooltip: s('numerals'),
+              initialValue: BaseNumeral.findById(selectedNumType),
               onSelected: (NumeralType item) {
                 Fortuna.sp?.setString(BaseNumeral.key, item.id);
                 Grid.id.currentState?.setState(() {});
@@ -148,9 +151,6 @@ class Fortuna extends StatelessWidget {
               itemBuilder: (BuildContext c) =>
                   [for (int i = 0; i < BaseNumeral.all.length; i++) i].map((i) {
                     NumeralType type = BaseNumeral.all[i];
-                    String selectedType =
-                        Fortuna.sp?.getString(BaseNumeral.key) ??
-                            BaseNumeral.defType;
 
                     return PopupMenuItem<NumeralType>(
                       value: type,
@@ -164,7 +164,7 @@ class Fortuna extends StatelessWidget {
                               ),
                             ),
                             Checkbox(
-                              value: type.id == selectedType,
+                              value: type.id == selectedNumType,
                               onChanged: (str) {},
                               activeColor: Fortuna.textColor(),
                             ),
@@ -560,10 +560,7 @@ class GridState extends State<Grid> {
 
         String selectedNumType =
             Fortuna.sp?.getString(BaseNumeral.key) ?? BaseNumeral.defType;
-        bool enlarge = BaseNumeral.all
-            .firstWhere((element) => element.id == selectedNumType,
-                orElse: () => BaseNumeral.all.first)
-            .enlarge;
+        bool enlarge = BaseNumeral.findById(selectedNumType).enlarge;
 
         return InkWell(
           onTap: () => getLuna().changeVar(context, i),

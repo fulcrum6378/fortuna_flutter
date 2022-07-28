@@ -59,6 +59,10 @@ abstract class BaseNumeral {
         return null;
     }
   }
+
+  static NumeralType findById(String selectedNumType) =>
+      BaseNumeral.all.firstWhere((element) => element.id == selectedNumType,
+          orElse: () => BaseNumeral.all.first);
 }
 
 class NumeralType {
