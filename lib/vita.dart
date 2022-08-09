@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member
 
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -8,77 +9,161 @@ import 'package:flutter/material.dart';
 
 import 'main.dart';
 
-typedef Luna = List<double?>;
-
-typedef Vita = Map<String, Luna>;
+typedef Vita = SplayTreeMap<String, Luna>;
 
 extension VitaUtils on Vita {
-  void save() {
-    if (kIsWeb) return;
-    Fortuna.stored?.writeAsString(jsonEncode(this));
+  static Vita load(String text) {
+    Vita vita = Vita();
+    DateTime cal = DateTime.now();
+    String? key;
+    var dies = 0;
+
+    for (String ln in text.split("\n"))
+      if (key == null) {
+        if (!ln.startsWith('@')) continue;
+        var sn = split(ln, ";", 2);
+        var s = sn[0].split("~");
+        key = s[0].substring(1);
+        vita[key] = Luna(cal, (s.length > 1) ? double.parse(s[1]) : null,
+            (sn.length > 1) ? sn[1].loadVitaText() : null);
+        dies = 0;
+      } else {
+        if (ln.isEmpty) {
+          key = null;
+          continue;
+        }
+        var sn = split(ln, ";", 2);
+        var s = sn[0].split(":");
+        if (s.length == 2) dies = int.parse(s[0]) - 1;
+        vita[key]!.diebus[dies] = double.parse((s.length > 1) ? s[1] : s[0]);
+        vita[key]!.verba[dies] = (sn.length > 1) ? sn[1].loadVitaText() : null;
+        dies++;
+      }
+    return vita;
   }
 
-  static Vita createFromJson(String json) {
-    final data = new Map<String, List<dynamic>>.from(jsonDecode(json));
-    final vita = Vita();
-    data.forEach((key, value) {
-      List<dynamic> rawLuna = value;
-      List<double?> newLuna = <double?>[];
-      for (final v in rawLuna) newLuna.add(v);
-      vita[key] = newLuna;
+  String dump() {
+    StringBuffer sb = StringBuffer();
+    forEach((k, luna) {
+      sb.write("@$k");
+      if (luna.defVar != null) {
+        sb.write("~${luna.defVar}");
+        if (luna.verbum?.trim().isNotEmpty == true)
+          sb.write(";${luna.verbum!.saveVitaText()}");
+      }
+      sb.write("\n");
+      var skipped = false;
+      for (int d = 0; d < luna.diebus.length; d++) {
+        if (luna.diebus[d] == null) {
+          skipped = true;
+          continue;
+        }
+        if (skipped) {
+          sb.write("${d + 1}:");
+          skipped = false;
+        }
+        sb.write(luna.diebus[d]);
+        if (luna.verba[d]?.trim().isNotEmpty == true)
+          sb.write(";${luna.verba[d]!.saveVitaText()}");
+        sb.write("\n");
+      }
+      sb.write("\n");
     });
-    return vita;
+    return sb.toString();
+  }
+
+  void save() {
+    if (kIsWeb) return;
+    Fortuna.stored?.writeAsString(dump());
   }
 }
 
-extension LunaUtils on List<double?> {
-  static int selectedVar = 6;
+class Luna {
+  late List<double?> diebus;
+  late List<String?> verba;
+  double? defVar;
+  String? verbum;
 
-  double? getDefault() => this[length - 1];
+  Luna(DateTime cal, [double? defVar, String? verbum]) {
+    diebus = [for (var i = 0; i < cal.lunaMaxima(); i++) i]
+        .map((i) => null)
+        .toList();
+    verba = [for (var i = 0; i < cal.lunaMaxima(); i++) i]
+        .map((i) => null)
+        .toList();
+  }
+
+  get length => diebus.length;
+
+  operator [](int index) => diebus[index];
+
+  operator []=(int index, double? value) => diebus[index] = value;
+
+  static int selectedVar = 6;
 
   void setDefault(d) {
     this[length - 1] = d;
   }
 
-  void changeVar(BuildContext c, int i) {
+  void changeVar(BuildContext c, int? i) {
     showCupertinoModalPopup(
         context: c,
         builder: (BuildContext context) {
-          int? newVar;
-          if (this[i] != null) newVar = scoreToVariabilis(this[i]!);
-          if (this[Fortuna.calendar.defPos()] != null)
-            newVar = scoreToVariabilis(this[Fortuna.calendar.defPos()]!);
-          if (newVar == null) newVar = 6;
-          selectedVar = newVar;
+          if (i != null && diebus.length > i && diebus[i] != null)
+            selectedVar = scoreToVariabilis(diebus[i]!);
+          else if (defVar != null)
+            selectedVar = scoreToVariabilis(defVar!);
+          else
+            selectedVar = 6;
 
           return AlertDialog(
             title: Text(s('variabilis') +
-                ((i != Fortuna.calendar.defPos())
-                    ? "${Fortuna.luna}.${z(i + 1)}"
-                    : s('defValue'))),
+                ((i != null) ? "${Fortuna.luna}.${z(i + 1)}" : s('defValue'))),
             content: SizedBox(
-              height: 200,
-              child: CupertinoPicker(
-                backgroundColor: Colors.transparent,
-                scrollController:
-                    FixedExtentScrollController(initialItem: selectedVar),
-                useMagnifier: true,
-                magnification: 2,
-                squeeze: 0.7,
+              height: 270,
+              child: Column(
                 children: [
-                  for (var i = 0; i <= 12; i++)
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 4),
-                      child: Text(
-                        "${variabilisToScore(i).showScore()}",
-                        style: Fortuna.font(18, bold: true),
+                  SizedBox(
+                    height: 200,
+                    child: CupertinoPicker(
+                      backgroundColor: Colors.transparent,
+                      scrollController:
+                          FixedExtentScrollController(initialItem: selectedVar),
+                      useMagnifier: true,
+                      magnification: 2,
+                      squeeze: 0.7,
+                      children: [
+                        for (var i = 0; i <= 12; i++)
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 4),
+                            child: Text(
+                              "${variabilisToScore(i).showScore()}",
+                              style: Fortuna.font(18, bold: true),
+                            ),
+                          )
+                      ],
+                      itemExtent: 30,
+                      onSelectedItemChanged: (i) {
+                        selectedVar = i;
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    height: 70,
+                    // FractionallySizedBox didn't fix it!
+                    child: TextFormField(
+                      maxLines: 5,
+                      textAlign: TextAlign.start,
+                      keyboardType: TextInputType.text,
+                      style: Fortuna.font(18, bold: true),
+                      decoration: InputDecoration(
+                        counterText: "",
+                        border: InputBorder.none,
                       ),
-                    )
+                      onChanged: (s) {},
+                    ),
+                  ),
                 ],
-                itemExtent: 30,
-                onSelectedItemChanged: (i) {
-                  selectedVar = i;
-                },
               ),
             ),
             actions: <MaterialButton>[
@@ -89,7 +174,7 @@ extension LunaUtils on List<double?> {
                 ),
                 onPressed: () {
                   if (Fortuna.vita != null)
-                    saveScore(i, variabilisToScore(selectedVar));
+                    saveScore(i, variabilisToScore(selectedVar), null);
                   Navigator.of(context).pop();
                 },
               ),
@@ -106,7 +191,7 @@ extension LunaUtils on List<double?> {
                   style: Theme.of(context).textTheme.bodyText2,
                 ),
                 onPressed: () {
-                  if (Fortuna.vita != null) saveScore(i, null);
+                  if (Fortuna.vita != null) saveScore(i, null, null);
                   Navigator.of(context).pop();
                 },
               ),
@@ -115,17 +200,23 @@ extension LunaUtils on List<double?> {
         });
   }
 
-  void saveScore(int i, double? score) {
-    this[i] = score;
+  void saveScore(int? i, double? score, String? verbum) {
+    if (i != null) {
+      diebus[i] = score;
+      verba[i] = verbum;
+    } else {
+      defVar = score;
+      this.verbum = verbum;
+    }
     Fortuna.vita!.save();
     Grid.id.currentState?.setState(() {});
     Panel.id.currentState?.setState(() {});
   }
 
-  double mean(DateTime cal) {
+  double mean() {
     final scores = <double>[];
-    for (var v = 0; v <= cal.lunaMaxima(); v++) {
-      final score = this[v] ?? this[cal.defPos()];
+    for (var v = 0; v < diebus.length; v++) {
+      final score = this[v] ?? defVar;
       if (score != null) scores.add(score);
     }
     return (scores.length == 0) ? 0 : (scores.sum() / scores.length);
@@ -145,8 +236,6 @@ extension CalendarKey on DateTime {
       .inDays;
 
   int lunaMaxima() => daysInMonth();
-
-  int defPos() => 31;
 }
 
 String z(Object? n, [int ideal = 2]) {
@@ -155,9 +244,33 @@ String z(Object? n, [int ideal = 2]) {
   return s;
 }
 
-DateTime makeCalendar(String luna) {
-  final spl = luna.split('.');
-  return DateTime(int.parse(spl[0]), int.parse(spl[1]) - 1, 1);
+extension StringUtils on String {
+  DateTime makeCalendar() {
+    final spl = this.split('.');
+    return DateTime(int.parse(spl[0]), int.parse(spl[1]) - 1, 1);
+  }
+
+  String loadVitaText() => replaceAll("\\n", "\n");
+
+  String saveVitaText() => replaceAll("\n", "\\n");
+}
+
+List<String> split(String string, String pattern, [int limit = 0]) {
+  var result = <String>[];
+  if (pattern.isEmpty) {
+    result.add(string);
+    return result;
+  }
+  while (true) {
+    var index = string.indexOf(pattern, 0);
+    if (index == -1 || (limit > 0 && result.length >= limit)) {
+      result.add(string);
+      break;
+    }
+    result.add(string.substring(0, index));
+    string = string.substring(index + pattern.length);
+  }
+  return result;
 }
 
 extension ScoreUtils on double? {
@@ -178,4 +291,16 @@ extension Sum on List<double> {
     for (var i = 0; i < length; i++) value += this[i];
     return value;
   }
+}
+
+Vita loadLegacyVita(String json) {
+  final data = new Map<String, List<dynamic>>.from(jsonDecode(json));
+  final vita = Vita();
+  data.forEach((key, value) {
+    List<dynamic> rawLuna = value;
+    Luna newLuna = Luna(key.makeCalendar(), rawLuna.last);
+    for (int d = 0; d < newLuna.length; d++) newLuna[d] = rawLuna[d];
+    vita[key] = newLuna;
+  });
+  return vita;
 }

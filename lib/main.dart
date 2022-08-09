@@ -65,10 +65,9 @@ class Fortuna extends StatelessWidget {
   static String l = "en";
   static SharedPreferences? sp;
 
-  static List<double?> emptyLuna() =>
-      [for (var i = 1; i <= calendar.defPos() + 1; i++) null];
+  static Luna emptyLuna() => Luna(calendar);
 
-  static List<double?> thisLuna() => vita?[luna] ?? emptyLuna();
+  static Luna thisLuna() => vita?[luna] ?? emptyLuna();
 
   static bool night() =>
       WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
@@ -104,11 +103,11 @@ class Fortuna extends StatelessWidget {
 
     if (!kIsWeb)
       getApplicationSupportDirectory().then((dir) {
-        stored = File('${dir.path}/fortuna.json');
+        stored = File('${dir.path}/fortuna.vita');
         stored?.exists().then((exists) {
           if (exists)
-            stored?.readAsString().then((json) {
-              vita = VitaUtils.createFromJson(json);
+            stored?.readAsString().then((data) {
+              vita = VitaUtils.load(data);
               Panel.id.currentState?.setState(() {});
               Grid.id.currentState?.setState(() {});
             });
@@ -189,9 +188,9 @@ class Fortuna extends StatelessWidget {
                 builder: (BuildContext context) {
                   final scores = <double>[];
                   Fortuna.vita?.forEach((key, luna) {
-                    final cal = makeCalendar(key);
+                    final cal = key.makeCalendar();
                     for (var v = 0; v <= cal.lunaMaxima(); v++) {
-                      final score = luna[v] ?? luna[cal.defPos()];
+                      final score = luna[v] ?? luna.defVar;
                       if (score != null) scores.add(score);
                     }
                   });
@@ -202,7 +201,8 @@ class Fortuna extends StatelessWidget {
                               ? 0.0
                               : sum.toDouble() / scores.length.toDouble())
                           .toString(),
-                      sum.toString());
+                      sum.toString(),
+                      scores.length);
 
                   final buttonStyle = Theme.of(context).textTheme.bodyText2;
                   return AlertDialog(
@@ -239,26 +239,41 @@ class Fortuna extends StatelessWidget {
               if (kIsWeb)
                 FilePicker.platform.pickFiles(
                     type: FileType.custom,
-                    allowedExtensions: ['json']).then((result) {
-                  if (result != null)
-                    importData(context, result.files.single.bytes!);
+                    allowedExtensions: ['json', 'vita']).then((result) {
+                  switch (result?.files.single.extension) {
+                    case 'json':
+                      importJson(context, result!.files.single.bytes!);
+                      break;
+                    case 'vita':
+                      importVita(context, result!.files.single.bytes!);
+                      break;
+                    default:
+                      break;
+                  }
                 });
               else
                 FlutterDocumentPicker.openDocument(
-                    params: FlutterDocumentPickerParams(
-                        allowedFileExtensions: ['json'],
-                        allowedUtiTypes: ['json'],
-                        allowedMimeTypes: ['application/json'])).then((path) {
+                    params: FlutterDocumentPickerParams(allowedFileExtensions: [
+                  'json'
+                ], allowedUtiTypes: [
+                  'json'
+                ], allowedMimeTypes: [
+                  'application/octet-stream',
+                  'application/json'
+                ])).then((path) {
                   if (path == null) return;
-                  if (!path.endsWith(".json")) {
+                  if (!path.endsWith(".json") && !path.endsWith(".vita")) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(s('nonJson')),
                         duration: Duration(seconds: 5)));
                     return;
                   }
-                  File(path)
-                      .readAsBytes()
-                      .then((bytes) => importData(context, bytes));
+                  File(path).readAsBytes().then((bytes) {
+                    if (path.endsWith(".vita"))
+                      importVita(context, bytes);
+                    else
+                      importJson(context, bytes);
+                  });
                 });
             }),
             navButton(context, Icons.send, 'navSend', () {
@@ -329,13 +344,21 @@ class Fortuna extends StatelessWidget {
         onTap: onTap,
       );
 
-  void importData(BuildContext context, Uint8List bytes) {
-    final data = VitaUtils.createFromJson(new String.fromCharCodes(bytes));
+  void importJson(BuildContext context, Uint8List bytes) {
+    final data = loadLegacyVita(new String.fromCharCodes(bytes));
     if (data.keys.any((k) => k.length != 7)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s('invalidFile')), duration: Duration(seconds: 5)));
       return;
     }
+    importData(context, data);
+  }
+
+  void importVita(BuildContext context, Uint8List bytes) {
+    importData(context, VitaUtils.load(new String.fromCharCodes(bytes)));
+  }
+
+  void importData(BuildContext context, Vita data) {
     vita = data;
     vita?.save();
     Panel.id.currentState?.setState(() {});
@@ -427,12 +450,11 @@ class PanelState extends State<Panel> {
               const SizedBox(width: 10),
               MaterialButton(
                 child: Text(
-                  Fortuna.thisLuna()[Fortuna.calendar.defPos()].showScore(),
+                  Fortuna.thisLuna().defVar.showScore(),
                   style: Fortuna.font(16),
                 ),
                 onPressed: () {
-                  Fortuna.thisLuna()
-                      .changeVar(context, Fortuna.calendar.defPos());
+                  Fortuna.thisLuna().changeVar(context, null);
                 },
                 // onLongPress: () {},
                 // Apparently not possible in Flutter yet!
@@ -451,7 +473,7 @@ class PanelState extends State<Panel> {
         Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Text(
-            Fortuna.thisLuna().mean(Fortuna.calendar).toString(),
+            Fortuna.thisLuna().mean().toString(),
             style: Fortuna.font(15),
           ),
         ),
@@ -462,7 +484,7 @@ class PanelState extends State<Panel> {
   void valuesChanged() {
     Panel.id.currentState?.setState(() {});
     Fortuna.luna = "${z(Panel.annus, 4)}.${z(Panel.luna)}";
-    Fortuna.calendar = makeCalendar(Fortuna.luna);
+    Fortuna.calendar = Fortuna.luna.makeCalendar();
     Grid.id.currentState?.setState(() {});
   }
 
@@ -494,7 +516,7 @@ class Grid extends StatefulWidget {
 }
 
 class GridState extends State<Grid> {
-  List<double?> getLuna() {
+  Luna getLuna() {
     if (Fortuna.vita![Fortuna.luna] == null)
       Fortuna.vita![Fortuna.luna] = Fortuna.emptyLuna();
     return Fortuna.vita![Fortuna.luna]!;
@@ -540,9 +562,8 @@ class GridState extends State<Grid> {
       crossAxisCount: cellsInRow(context),
       children:
           [for (var i = 0; i < Fortuna.calendar.lunaMaxima(); i++) i].map((i) {
-        double? score = getLuna()[i] ?? getLuna().getDefault();
-        bool isEstimated =
-            getLuna()[i] == null && getLuna().getDefault() != null;
+        double? score = getLuna()[i] ?? getLuna().defVar;
+        bool isEstimated = getLuna()[i] == null && getLuna().defVar != null;
 
         Color bg, tc;
         if (score != null && score > 0) {
