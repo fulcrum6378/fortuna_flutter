@@ -151,16 +151,25 @@ class Luna {
                   SizedBox(
                     height: 70,
                     // FractionallySizedBox didn't fix it!
-                    child: TextFormField(
-                      maxLines: 5,
-                      textAlign: TextAlign.start,
-                      keyboardType: TextInputType.text,
-                      style: Fortuna.font(18, bold: true),
-                      decoration: InputDecoration(
-                        counterText: "",
-                        border: InputBorder.none,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Color(0xFFEFEFEF),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      onChanged: (s) {},
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 14),
+                        child: TextFormField(
+                          maxLines: 5,
+                          textAlign: TextAlign.start,
+                          keyboardType: TextInputType.text,
+                          style: Fortuna.font(18, bold: true),
+                          decoration: InputDecoration(
+                            counterText: "",
+                            border: InputBorder.none,
+                          ),
+                          onChanged: (s) {},
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -176,6 +185,7 @@ class Luna {
                   if (Fortuna.vita != null)
                     saveScore(i, variabilisToScore(selectedVar), null);
                   Navigator.of(context).pop();
+                  Fortuna.shake();
                 },
               ),
               MaterialButton(
@@ -193,6 +203,7 @@ class Luna {
                 onPressed: () {
                   if (Fortuna.vita != null) saveScore(i, null, null);
                   Navigator.of(context).pop();
+                  Fortuna.shake();
                 },
               ),
             ],

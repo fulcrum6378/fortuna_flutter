@@ -14,6 +14,7 @@ import 'package:jiffy/jiffy.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibration/vibration.dart';
 
 import 'dict.dart';
 import 'numerals.dart';
@@ -91,6 +92,13 @@ class Fortuna extends StatelessWidget {
       csd = Color(0xFF670D06),
       cwd = Color(0x44FFFFFF);
 
+  static bool canShake = false;
+
+  static shake() {
+    if (!canShake) return;
+    Vibration.vibrate(duration: 40, amplitude: 100);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (vita == null) vita = Vita();
@@ -129,6 +137,8 @@ class Fortuna extends StatelessWidget {
     String selectedNumType =
         Fortuna.sp?.getString(BaseNumeral.key) ?? BaseNumeral.defType;
 
+    Vibration.hasVibrator().then((value) => canShake = value == true);
+
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: systemOverlayStyle,
@@ -140,12 +150,13 @@ class Fortuna extends StatelessWidget {
         ),
         actions: <Widget>[
           PopupMenuButton<NumeralType>(
-              icon: Icon(Icons.numbers),
+              icon: Icon(Icons.calendar_month),
               tooltip: s('numerals'),
               initialValue: BaseNumeral.findById(selectedNumType),
               onSelected: (NumeralType item) {
                 Fortuna.sp?.setString(BaseNumeral.key, item.id);
                 Grid.id.currentState?.setState(() {});
+                Fortuna.shake();
               },
               itemBuilder: (BuildContext c) =>
                   [for (int i = 0; i < BaseNumeral.all.length; i++) i].map((i) {
@@ -188,8 +199,7 @@ class Fortuna extends StatelessWidget {
                 builder: (BuildContext context) {
                   final scores = <double>[];
                   Fortuna.vita?.forEach((key, luna) {
-                    final cal = key.makeCalendar();
-                    for (var v = 0; v <= cal.lunaMaxima(); v++) {
+                    for (var v = 0; v < luna.diebus.length; v++) {
                       final score = luna[v] ?? luna.defVar;
                       if (score != null) scores.add(score);
                     }
@@ -385,7 +395,7 @@ class Panel extends StatefulWidget {
 }
 
 class PanelState extends State<Panel> {
-  static final double arrowDistance = 25;
+  static final double arrowDistance = 8;
   String _annus = Panel.annus;
 
   @override
@@ -400,7 +410,10 @@ class PanelState extends State<Panel> {
               InkWell(
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
-                  child: Icon(Icons.arrow_left, color: Fortuna.textColor()),
+                  child: Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Icon(Icons.arrow_left, color: Fortuna.textColor()),
+                  ),
                 ),
                 onTap: () => rollCalendar(false),
               ),
@@ -463,7 +476,10 @@ class PanelState extends State<Panel> {
               InkWell(
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
-                  child: Icon(Icons.arrow_right, color: Fortuna.textColor()),
+                  child: Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Icon(Icons.arrow_right, color: Fortuna.textColor()),
+                  ),
                 ),
                 onTap: () => rollCalendar(true),
               ),
@@ -587,15 +603,15 @@ class GridState extends State<Grid> {
           onTap: () => getLuna().changeVar(context, i),
           child: Container(
             decoration: BoxDecoration(
-                color: bg,
-                border: !(Fortuna.luna == Grid.todayLuna &&
-                        Grid.todayCalendar.day == i + 1)
-                    ? normalBorder
-                    : Border.all(
-                        width: 5,
-                        color:
-                            Color(!Fortuna.night() ? 0x44000000 : 0x44FFFFFF),
-                      )),
+              color: bg,
+              border: !(Fortuna.luna == Grid.todayLuna &&
+                      Grid.todayCalendar.day == i + 1)
+                  ? normalBorder
+                  : Border.all(
+                      width: 5,
+                      color: Color(!Fortuna.night() ? 0x44000000 : 0x44FFFFFF),
+                    ),
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

@@ -1,7 +1,7 @@
 name: fortuna
 description: An application of the Hedonist philosophy.
 publish_to: 'none'
-version: 3.1.0
+version: 3.2.0
 environment:
   sdk: ">=2.16.0 <3.0.2"
 
@@ -18,6 +18,7 @@ dev_dependencies: # force update their build.gradle
   format: ^1.1.1
   jiffy: ^5.0.0
   shared_preferences: ^2.0.15
+  vibration: ^1.7.5
 
 flutter:
   uses-material-design: true
