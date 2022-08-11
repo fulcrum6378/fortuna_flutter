@@ -20,6 +20,8 @@ import 'dict.dart';
 import 'numerals.dart';
 import 'vita.dart';
 
+// TODO: Fix numerals menu
+
 void main() {
   runApp(MaterialApp(
     title: s('appName'),
@@ -99,6 +101,9 @@ class Fortuna extends StatelessWidget {
     Vibration.vibrate(duration: 40, amplitude: 100);
   }
 
+  static Icon verbumIcon([Color? tc]) =>
+      Icon(Icons.chat_sharp, color: tc ?? textColor(), size: 19);
+
   @override
   Widget build(BuildContext context) {
     if (vita == null) vita = Vita();
@@ -150,39 +155,40 @@ class Fortuna extends StatelessWidget {
         ),
         actions: <Widget>[
           PopupMenuButton<NumeralType>(
-              icon: Icon(Icons.calendar_month),
-              tooltip: s('numerals'),
-              initialValue: BaseNumeral.findById(selectedNumType),
-              onSelected: (NumeralType item) {
-                Fortuna.sp?.setString(BaseNumeral.key, item.id);
-                Grid.id.currentState?.setState(() {});
-                Fortuna.shake();
-              },
-              itemBuilder: (BuildContext c) =>
-                  [for (int i = 0; i < BaseNumeral.all.length; i++) i].map((i) {
-                    NumeralType type = BaseNumeral.all[i];
+            icon: Icon(Icons.calendar_month),
+            tooltip: s('numerals'),
+            initialValue: BaseNumeral.findById(selectedNumType),
+            onSelected: (NumeralType item) {
+              Fortuna.sp?.setString(BaseNumeral.key, item.id);
+              Grid.id.currentState?.setState(() {});
+              Fortuna.shake();
+            },
+            itemBuilder: (BuildContext c) =>
+                [for (int i = 0; i < BaseNumeral.all.length; i++) i].map((i) {
+              NumeralType type = BaseNumeral.all[i];
 
-                    return PopupMenuItem<NumeralType>(
-                      value: type,
-                      child: Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                s(type.id),
-                                style: Theme.of(c).textTheme.bodyText2,
-                              ),
-                            ),
-                            Checkbox(
-                              value: type.id == selectedNumType,
-                              onChanged: (str) {},
-                              activeColor: Fortuna.textColor(),
-                            ),
-                          ],
+              return PopupMenuItem<NumeralType>(
+                value: type,
+                child: Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          s(type.id),
+                          style: Theme.of(c).textTheme.bodyText2,
                         ),
                       ),
-                    );
-                  }).toList()),
+                      Checkbox(
+                        value: type.id == selectedNumType,
+                        onChanged: (str) {},
+                        activeColor: Fortuna.textColor(),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ],
       ),
       drawer: Drawer(
@@ -190,6 +196,9 @@ class Fortuna extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.only(top: 40),
           children: <InkWell>[
+            navButton(context, Icons.today_sharp, 'navToday', () {
+              // TODO
+            }),
             navButton(
               context,
               Icons.calculate_sharp,
@@ -403,7 +412,20 @@ class PanelState extends State<Panel> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 40, bottom: 20),
+          padding: EdgeInsets.only(top: 5, right: 20),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Visibility(
+              visible: Fortuna.thisLuna().verbum != null,
+              child: Fortuna.verbumIcon(),
+              maintainState: true,
+              maintainAnimation: true,
+              maintainSize: true,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 25, bottom: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -420,9 +442,8 @@ class PanelState extends State<Panel> {
               SizedBox(width: arrowDistance),
               DropdownButtonHideUnderline(
                 child: DropdownButton<int>(
-                  items: [
-                    for (var i = 1; i <= 12; i++) i
-                  ] // change 12 in Hebrew
+                  // change 12 in Hebrew
+                  items: [for (int i = 1; i <= 12; i++) i]
                       .map<DropdownMenuItem<int>>(
                           (int value) => DropdownMenuItem<int>(
                                 value: value,
@@ -449,7 +470,7 @@ class PanelState extends State<Panel> {
                   keyboardType: TextInputType.number,
                   style: Fortuna.font(20, bold: true),
                   decoration: InputDecoration(
-                    counterText: "",
+                    counterText: "", // NOT THE DEF VALUE ^
                     border: InputBorder.none,
                   ),
                   onChanged: (s) {
@@ -466,9 +487,7 @@ class PanelState extends State<Panel> {
                   Fortuna.thisLuna().defVar.showScore(),
                   style: Fortuna.font(16),
                 ),
-                onPressed: () {
-                  Fortuna.thisLuna().changeVar(context, null);
-                },
+                onPressed: () => Fortuna.thisLuna().changeVar(context, null),
                 // onLongPress: () {},
                 // Apparently not possible in Flutter yet!
               ),
@@ -612,19 +631,36 @@ class GridState extends State<Grid> {
                       color: Color(!Fortuna.night() ? 0x44000000 : 0x44FFFFFF),
                     ),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
               children: [
-                Text(
-                  BaseNumeral.construct(selectedNumType, i + 1)?.toString() ??
-                      (i + 1).toString(),
-                  style: Fortuna.font(!enlarge ? 18 : 34, color: tc),
+                Visibility(
+                  visible: getLuna().verba[i] != null,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 4, top: 6),
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: Fortuna.verbumIcon(tc),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  (isEstimated ? "c. " : "") + score.showScore(),
-                  style: Fortuna.font(13, color: tc),
-                ),
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        BaseNumeral.construct(selectedNumType, i + 1)
+                                ?.toString() ??
+                            (i + 1).toString(),
+                        style: Fortuna.font(!enlarge ? 18 : 34, color: tc),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        (isEstimated ? "c. " : "") + score.showScore(),
+                        style: Fortuna.font(13, color: tc),
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
           ),

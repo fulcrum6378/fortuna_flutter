@@ -85,12 +85,9 @@ class Luna {
   String? verbum;
 
   Luna(DateTime cal, [double? defVar, String? verbum]) {
-    diebus = [for (var i = 0; i < cal.lunaMaxima(); i++) i]
-        .map((i) => null)
-        .toList();
-    verba = [for (var i = 0; i < cal.lunaMaxima(); i++) i]
-        .map((i) => null)
-        .toList();
+    int max = cal.lunaMaxima();
+    diebus = List<double?>.filled(max, null);
+    verba = List<String?>.filled(max, null);
   }
 
   get length => diebus.length;
@@ -100,118 +97,124 @@ class Luna {
   operator []=(int index, double? value) => diebus[index] = value;
 
   static int selectedVar = 6;
-
-  void setDefault(d) {
-    this[length - 1] = d;
-  }
+  static String enteredVerbum = "";
 
   void changeVar(BuildContext c, int? i) {
     showCupertinoModalPopup(
-        context: c,
-        builder: (BuildContext context) {
-          if (i != null && diebus.length > i && diebus[i] != null)
-            selectedVar = scoreToVariabilis(diebus[i]!);
-          else if (defVar != null)
-            selectedVar = scoreToVariabilis(defVar!);
-          else
-            selectedVar = 6;
+      context: c,
+      builder: (BuildContext context) {
+        if (i != null && diebus.length > i && diebus[i] != null)
+          selectedVar = scoreToVariabilis(diebus[i]!);
+        else if (defVar != null)
+          selectedVar = scoreToVariabilis(defVar!);
+        else
+          selectedVar = 6;
 
-          return AlertDialog(
-            title: Text(s('variabilis') +
-                ((i != null) ? "${Fortuna.luna}.${z(i + 1)}" : s('defValue'))),
-            content: SizedBox(
-              height: 270,
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 200,
-                    child: CupertinoPicker(
-                      backgroundColor: Colors.transparent,
-                      scrollController:
-                          FixedExtentScrollController(initialItem: selectedVar),
-                      useMagnifier: true,
-                      magnification: 2,
-                      squeeze: 0.7,
-                      children: [
-                        for (var i = 0; i <= 12; i++)
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: 4),
-                            child: Text(
-                              "${variabilisToScore(i).showScore()}",
-                              style: Fortuna.font(18, bold: true),
-                            ),
-                          )
-                      ],
-                      itemExtent: 30,
-                      onSelectedItemChanged: (i) {
-                        selectedVar = i;
-                      },
-                    ),
-                  ),
-                  SizedBox(
-                    height: 70,
-                    // FractionallySizedBox didn't fix it!
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFEFEFEF),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 14),
-                        child: TextFormField(
-                          maxLines: 5,
-                          textAlign: TextAlign.start,
-                          keyboardType: TextInputType.text,
-                          style: Fortuna.font(18, bold: true),
-                          decoration: InputDecoration(
-                            counterText: "",
-                            border: InputBorder.none,
+        if (i != null && verba.length > i && verba[i] != null)
+          enteredVerbum = verba[i]!;
+        else if (verbum != null)
+          enteredVerbum = verbum!;
+        else
+          enteredVerbum = "";
+
+        return AlertDialog(
+          title: Text(s('variabilis') +
+              ((i != null) ? "${Fortuna.luna}.${z(i + 1)}" : s('defValue'))),
+          content: SizedBox(
+            height: 270,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 200,
+                  child: CupertinoPicker(
+                    backgroundColor: Colors.transparent,
+                    scrollController:
+                        FixedExtentScrollController(initialItem: selectedVar),
+                    useMagnifier: true,
+                    magnification: 2,
+                    squeeze: 0.7,
+                    children: [
+                      for (var i = 0; i <= 12; i++)
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                            "${variabilisToScore(i).showScore()}",
+                            style: Fortuna.font(18, bold: true),
                           ),
-                          onChanged: (s) {},
+                        )
+                    ],
+                    itemExtent: 30,
+                    onSelectedItemChanged: (i) => selectedVar = i,
+                  ),
+                ),
+                SizedBox(
+                  height: 70,
+                  // FractionallySizedBox didn't fix it!
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFEFEFEF),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14),
+                      child: TextFormField(
+                        controller: TextEditingController()
+                          ..text = enteredVerbum,
+                        maxLines: 5,
+                        textAlign: TextAlign.start,
+                        keyboardType: TextInputType.text,
+                        style: Fortuna.font(18, bold: true),
+                        decoration: InputDecoration(
+                          counterText: "",
+                          border: InputBorder.none,
                         ),
+                        onChanged: (s) => enteredVerbum = s,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            actions: <MaterialButton>[
-              MaterialButton(
-                child: Text(
-                  s('save'),
-                  style: Theme.of(context).textTheme.bodyText2,
-                ),
-                onPressed: () {
-                  if (Fortuna.vita != null)
-                    saveScore(i, variabilisToScore(selectedVar), null);
-                  Navigator.of(context).pop();
-                  Fortuna.shake();
-                },
+          ),
+          actions: <MaterialButton>[
+            MaterialButton(
+              child: Text(
+                s('save'),
+                style: Theme.of(context).textTheme.bodyText2,
               ),
-              MaterialButton(
-                child: Text(
-                  s('cancel'),
-                  style: Theme.of(context).textTheme.bodyText2,
-                ),
-                onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                if (Fortuna.vita != null)
+                  saveScore(i, variabilisToScore(selectedVar), enteredVerbum);
+                Navigator.of(context).pop();
+                Fortuna.shake();
+              },
+            ),
+            MaterialButton(
+              child: Text(
+                s('cancel'),
+                style: Theme.of(context).textTheme.bodyText2,
               ),
-              MaterialButton(
-                child: Text(
-                  s('clear'),
-                  style: Theme.of(context).textTheme.bodyText2,
-                ),
-                onPressed: () {
-                  if (Fortuna.vita != null) saveScore(i, null, null);
-                  Navigator.of(context).pop();
-                  Fortuna.shake();
-                },
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            MaterialButton(
+              child: Text(
+                s('clear'),
+                style: Theme.of(context).textTheme.bodyText2,
               ),
-            ],
-          );
-        });
+              onPressed: () {
+                if (Fortuna.vita != null) saveScore(i, null, null);
+                Navigator.of(context).pop();
+                Fortuna.shake();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void saveScore(int? i, double? score, String? verbum) {
+    if (verbum?.isEmpty == true) verbum = null;
     if (i != null) {
       diebus[i] = score;
       verba[i] = verbum;
@@ -219,6 +222,7 @@ class Luna {
       defVar = score;
       this.verbum = verbum;
     }
+    Fortuna.vita![Fortuna.luna] = this;
     Fortuna.vita!.save();
     Grid.id.currentState?.setState(() {});
     Panel.id.currentState?.setState(() {});
@@ -226,7 +230,7 @@ class Luna {
 
   double mean() {
     final scores = <double>[];
-    for (var v = 0; v < diebus.length; v++) {
+    for (int v = 0; v < diebus.length; v++) {
       final score = this[v] ?? defVar;
       if (score != null) scores.add(score);
     }

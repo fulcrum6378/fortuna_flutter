@@ -13,6 +13,7 @@ const Map<String, Map<String, String>> dict = {
     "navImport": "Import data",
     "navSend": "Send data to",
     "done": "Done!",
+    "navToday": "Today",
     "navStat": "Statistics",
     "defValue": "DEFAULT",
     "fortunaStat": "Statistics",
