@@ -21,35 +21,68 @@ import 'numerals.dart';
 import 'vita.dart';
 
 // TODO: Fix numerals menu
+// TODO: Fix default verbum save problem only in Android?!?
 
 void main() {
+  final mediumCornerStyle =
+      BeveledRectangleBorder(borderRadius: BorderRadius.circular(12));
+  final smallCornerStyle =
+      BeveledRectangleBorder(borderRadius: BorderRadius.circular(8));
+  final drawer = DrawerThemeData(
+    backgroundColor: Fortuna.cp,
+    shape: BeveledRectangleBorder(
+      borderRadius: BorderRadius.horizontal(right: Radius.circular(15)),
+    ),
+  );
+  final popupMenu = PopupMenuThemeData(
+    color: Fortuna.cpu,
+    shape: smallCornerStyle,
+  );
+
   runApp(MaterialApp(
     title: s('appName'),
     theme: ThemeData(
       primaryColor: Fortuna.cp,
       colorScheme: ThemeData().colorScheme.copyWith(
-          primary: Fortuna.cp, secondary: Fortuna.cpw, onPrimary: Colors.white),
+          primary: Fortuna.cp,
+          onPrimary: Colors.white,
+          secondary: Fortuna.cpw,
+          surface: Fortuna.cp,
+          onSurface: Colors.white),
+      // surface/onSurface is applied to AppBar
       textTheme: TextTheme(bodyText2: Fortuna.font(15, night: false)),
+      drawerTheme: drawer,
       dialogTheme: DialogTheme(
         titleTextStyle: Fortuna.font(20, bold: true, night: false),
         contentTextStyle: Fortuna.font(17, night: false),
+        shape: mediumCornerStyle,
+        backgroundColor: Fortuna.cpu,
       ),
+      popupMenuTheme: popupMenu,
       scaffoldBackgroundColor: Colors.white,
-      splashColor: Fortuna.cpw, // 0x44F44336
+      splashColor: Fortuna.cpw,
+      useMaterial3: true,
     ),
     darkTheme: ThemeData(
       primaryColor: Fortuna.cpd,
       colorScheme: ThemeData.dark().colorScheme.copyWith(
           primary: Fortuna.cpd,
+          onPrimary: Colors.white,
           secondary: Fortuna.cwd,
-          onPrimary: Colors.white),
+          surface: Fortuna.cp,
+          onSurface: Colors.white),
       textTheme: TextTheme(bodyText2: Fortuna.font(15, night: true)),
+      drawerTheme: drawer,
       dialogTheme: DialogTheme(
         titleTextStyle: Fortuna.font(20, bold: true, night: true),
         contentTextStyle: Fortuna.font(17, night: true),
+        shape: mediumCornerStyle,
+        backgroundColor: Fortuna.cpu,
       ),
+      popupMenuTheme: popupMenu,
       scaffoldBackgroundColor: Colors.black,
       splashColor: Fortuna.cwd,
+      useMaterial3: true,
     ),
     themeMode: ThemeMode.system,
     debugShowCheckedModeBanner: false,
@@ -92,7 +125,8 @@ class Fortuna extends StatelessWidget {
       cpw = Color(0x444CAF50),
       cs = Color(0xFFF44336),
       csd = Color(0xFF670D06),
-      cwd = Color(0x44FFFFFF);
+      cwd = Color(0x44FFFFFF),
+      cpu = Color(0xFFECF1EB); // Popup
 
   static bool canShake = false;
 
@@ -148,7 +182,6 @@ class Fortuna extends StatelessWidget {
       appBar: AppBar(
         systemOverlayStyle: systemOverlayStyle,
         toolbarHeight: 60,
-        backgroundColor: Theme.of(context).primaryColor,
         title: Text(
           s('appName'),
           style: const TextStyle(fontFamily: 'MorrisRoman', fontSize: 28),
@@ -158,6 +191,7 @@ class Fortuna extends StatelessWidget {
             icon: Icon(Icons.calendar_month),
             tooltip: s('numerals'),
             initialValue: BaseNumeral.findById(selectedNumType),
+            //elevation: 0, // In order to fix the grey problem!
             onSelected: (NumeralType item) {
               Fortuna.sp?.setString(BaseNumeral.key, item.id);
               Grid.id.currentState?.setState(() {});
@@ -192,16 +226,20 @@ class Fortuna extends StatelessWidget {
         ],
       ),
       drawer: Drawer(
-        backgroundColor: Theme.of(context).primaryColor,
         child: ListView(
           padding: const EdgeInsets.only(top: 40),
           children: <InkWell>[
-            navButton(context, Icons.today_sharp, 'navToday', () {
-              // TODO
+            navButton(context, Icons.today, 'navToday', () {
+              calendar = DateTime.now();
+              luna = calendar.toKey();
+              Panel.update();
+              Panel.id.currentState?.setState(() {});
+              Grid.id.currentState?.setState(() {});
+              Navigator.of(context).pop();
             }),
             navButton(
               context,
-              Icons.calculate_sharp,
+              Icons.calculate,
               'navStat',
               () => showDialog<String>(
                 context: context,
@@ -404,7 +442,7 @@ class Panel extends StatefulWidget {
 }
 
 class PanelState extends State<Panel> {
-  static final double arrowDistance = 8;
+  static final double arrowDistance = 15;
   String _annus = Panel.annus;
 
   @override
@@ -412,7 +450,7 @@ class PanelState extends State<Panel> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.only(top: 5, right: 20),
+          padding: EdgeInsets.only(top: 20, right: 30),
           child: Align(
             alignment: Alignment.centerRight,
             child: Visibility(
@@ -425,7 +463,7 @@ class PanelState extends State<Panel> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 25, bottom: 20),
+          padding: const EdgeInsets.only(top: 9, bottom: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -433,7 +471,7 @@ class PanelState extends State<Panel> {
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: Padding(
-                    padding: EdgeInsets.all(2),
+                    padding: EdgeInsets.all(4),
                     child: Icon(Icons.arrow_left, color: Fortuna.textColor()),
                   ),
                 ),
@@ -490,13 +528,14 @@ class PanelState extends State<Panel> {
                 onPressed: () => Fortuna.thisLuna().changeVar(context, null),
                 // onLongPress: () {},
                 // Apparently not possible in Flutter yet!
+                minWidth: 10,
               ),
               SizedBox(width: arrowDistance),
               InkWell(
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: Padding(
-                    padding: EdgeInsets.all(2),
+                    padding: EdgeInsets.all(4),
                     child: Icon(Icons.arrow_right, color: Fortuna.textColor()),
                   ),
                 ),
@@ -636,7 +675,7 @@ class GridState extends State<Grid> {
                 Visibility(
                   visible: getLuna().verba[i] != null,
                   child: Padding(
-                    padding: EdgeInsets.only(right: 4, top: 6),
+                    padding: EdgeInsets.only(right: 6, top: 6),
                     child: Align(
                       alignment: Alignment.topRight,
                       child: Fortuna.verbumIcon(tc),
