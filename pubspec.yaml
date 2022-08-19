@@ -1,7 +1,7 @@
 name: fortuna
 description: An application of the Hedonist philosophy.
 publish_to: 'none'
-version: 3.4.0
+version: 3.4.5
 environment:
   sdk: ">=2.16.0 <3.0.2"
 

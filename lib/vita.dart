@@ -14,9 +14,8 @@ typedef Vita = SplayTreeMap<String, Luna>;
 extension VitaUtils on Vita {
   static Vita load(String text) {
     Vita vita = Vita();
-    DateTime cal = DateTime.now();
     String? key;
-    var dies = 0;
+    int dies = 0;
 
     for (String ln in text.split("\n"))
       if (key == null) {
@@ -24,8 +23,12 @@ extension VitaUtils on Vita {
         var sn = split(ln, ";", 2);
         var s = sn[0].split("~");
         key = s[0].substring(1);
-        vita[key] = Luna(cal, (s.length > 1) ? double.parse(s[1]) : null,
-            (sn.length > 1) ? sn[1].loadVitaText() : null);
+        var splitKey = key.split(".");
+        vita[key] = Luna(
+          DateTime(int.parse(splitKey[0]), int.parse(splitKey[1])),
+          (s.length > 1) ? double.parse(s[1]) : null,
+          (sn.length > 1) ? sn[1].loadVitaText() : null,
+        );
         dies = 0;
       } else {
         if (ln.isEmpty) {

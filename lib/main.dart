@@ -1,6 +1,5 @@
 // ignore_for_file: invalid_use_of_protected_member
 
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -332,13 +331,14 @@ class Fortuna extends StatelessWidget {
                       importJson(context, bytes);
                   });
                 });
+              Navigator.of(context).pop();
             }),
             navButton(context, Icons.send, 'navSend', () {
               if (stored != null)
                 Share.shareFiles([stored!.path],
                     text: 'fortuna', mimeTypes: ['application/json']);
               else if (vita != null)
-                Share.share(jsonEncode(vita), subject: s('appName'));
+                Share.share(vita!.dump(), subject: s('appName'));
             }),
             navButton(
               context,
