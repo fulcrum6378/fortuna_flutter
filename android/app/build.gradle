@@ -26,13 +26,13 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdk 32
+    compileSdk 33
     buildToolsVersion '33.0.0'
 
     defaultConfig {
         applicationId "ir.mahdiparastesh.fortuna.flutter"
         minSdk 19
-        targetSdk 32
+        targetSdk 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }

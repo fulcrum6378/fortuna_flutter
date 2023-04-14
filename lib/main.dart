@@ -1,7 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -12,6 +11,7 @@ import 'package:format/format.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:share_plus_platform_interface/share_plus_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 
@@ -49,7 +49,7 @@ void main() {
           surface: Fortuna.cp,
           onSurface: Colors.white),
       // surface/onSurface is applied to AppBar
-      textTheme: TextTheme(bodyText2: Fortuna.font(15, night: false)),
+      textTheme: TextTheme(bodyMedium: Fortuna.font(15, night: false)),
       drawerTheme: drawer,
       dialogTheme: DialogTheme(
         titleTextStyle: Fortuna.font(20, bold: true, night: false),
@@ -70,7 +70,7 @@ void main() {
           secondary: Fortuna.cwd,
           surface: Fortuna.cp,
           onSurface: Colors.white),
-      textTheme: TextTheme(bodyText2: Fortuna.font(15, night: true)),
+      textTheme: TextTheme(bodyMedium: Fortuna.font(15, night: true)),
       drawerTheme: drawer,
       dialogTheme: DialogTheme(
         titleTextStyle: Fortuna.font(20, bold: true, night: true),
@@ -208,7 +208,7 @@ class Fortuna extends StatelessWidget {
                       Expanded(
                         child: Text(
                           s(type.id),
-                          style: Theme.of(c).textTheme.bodyText2,
+                          style: Theme.of(c).textTheme.bodyMedium,
                         ),
                       ),
                       Checkbox(
@@ -260,7 +260,7 @@ class Fortuna extends StatelessWidget {
                       sum.toString(),
                       scores.length);
 
-                  final buttonStyle = Theme.of(context).textTheme.bodyText2;
+                  final buttonStyle = Theme.of(context).textTheme.bodyMedium;
                   return AlertDialog(
                     title: Text(s('fortunaStat')),
                     content: Text(text),
@@ -335,8 +335,9 @@ class Fortuna extends StatelessWidget {
             }),
             navButton(context, Icons.send, 'navSend', () {
               if (stored != null)
-                Share.shareFiles([stored!.path],
-                    text: 'fortuna', mimeTypes: ['application/json']);
+                Share.shareXFiles(
+                    [XFile(stored!.path, mimeType: 'application/json')],
+                    text: 'fortuna');
               else if (vita != null)
                 Share.share(vita!.dump(), subject: s('appName'));
             }),
@@ -353,7 +354,7 @@ class Fortuna extends StatelessWidget {
                   actions: <MaterialButton>[
                     MaterialButton(
                       child: Text(s('ok'),
-                          style: Theme.of(context).textTheme.bodyText2),
+                          style: Theme.of(context).textTheme.bodyMedium),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -649,7 +650,7 @@ class GridState extends State<Grid> {
           bg = (!Fortuna.night() ? Fortuna.cs : Fortuna.csd)
               .withAlpha(((-score / ScoreUtils.MAX_RANGE) * 256).toInt() - 1);
         } else {
-          tc = Theme.of(context).textTheme.bodyText2!.color!;
+          tc = Theme.of(context).textTheme.bodyMedium!.color!;
           bg = Colors.transparent;
         }
 

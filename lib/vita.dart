@@ -183,7 +183,7 @@ class Luna {
             MaterialButton(
               child: Text(
                 s('save'),
-                style: Theme.of(context).textTheme.bodyText2,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               onPressed: () {
                 if (Fortuna.vita != null)
@@ -195,14 +195,14 @@ class Luna {
             MaterialButton(
               child: Text(
                 s('cancel'),
-                style: Theme.of(context).textTheme.bodyText2,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             MaterialButton(
               child: Text(
                 s('clear'),
-                style: Theme.of(context).textTheme.bodyText2,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               onPressed: () {
                 if (Fortuna.vita != null) saveScore(i, null, null);
