@@ -19,9 +19,6 @@ import 'dict.dart';
 import 'numerals.dart';
 import 'vita.dart';
 
-// TODO: Fix numerals menu
-// TODO: Fix default verbum save problem only in Android?!?
-
 void main() {
   final mediumCornerStyle =
       BeveledRectangleBorder(borderRadius: BorderRadius.circular(12));
@@ -712,9 +709,14 @@ class GridState extends State<Grid> {
 
 String s(String key) => dict[Fortuna.l]![key]!;
 
-// Building a Windows app needs Visual Studio installed with its huge size.
-// Building a Linux app needs Linux, a MacOS app needs MacOS.
+/*TODO:
+   * Fix numerals menu
+   * Fix default verbum save problem only in Android?!?
 
-// Running "flutter create ." will import default files to Android and iOS too!
-// Run "flutter "flutter create --platforms=web ."; Add these arguments in
-// similar situations: "--org=ir.mahdiparastesh.fortuna --project-name=fortuna"
+   * Building a Windows app needs Visual Studio installed with its huge size.
+   * Building a Linux app needs Linux, a MacOS app needs MacOS.
+   *
+   * Running "flutter create ." will import default files to Android and iOS too!
+   * Run "flutter "flutter create --platforms=web ."; Add these arguments in
+   * similar situations: "--org=ir.mahdiparastesh.fortuna --project-name=fortuna"
+   */
