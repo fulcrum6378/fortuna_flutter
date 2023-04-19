@@ -155,7 +155,7 @@ class Luna {
                   // FractionallySizedBox didn't fix it!
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Color(0xFFEFEFEF),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Padding(
@@ -182,12 +182,11 @@ class Luna {
           actions: <MaterialButton>[
             MaterialButton(
               child: Text(
-                s('save'),
+                s('clear'),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               onPressed: () {
-                if (Fortuna.vita != null)
-                  saveScore(i, variabilisToScore(selectedVar), enteredVerbum);
+                if (Fortuna.vita != null) saveScore(i, null, null);
                 Navigator.of(context).pop();
                 Fortuna.shake();
               },
@@ -201,11 +200,12 @@ class Luna {
             ),
             MaterialButton(
               child: Text(
-                s('clear'),
+                s('save'),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               onPressed: () {
-                if (Fortuna.vita != null) saveScore(i, null, null);
+                if (Fortuna.vita != null)
+                  saveScore(i, variabilisToScore(selectedVar), enteredVerbum);
                 Navigator.of(context).pop();
                 Fortuna.shake();
               },

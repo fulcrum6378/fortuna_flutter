@@ -53,10 +53,12 @@ void main() {
         contentTextStyle: Fortuna.font(17, night: false),
         shape: mediumCornerStyle,
         backgroundColor: Fortuna.cpu,
+        surfaceTintColor: Fortuna.cpu,
       ),
       popupMenuTheme: popupMenu,
       scaffoldBackgroundColor: Colors.white,
       splashColor: Fortuna.cpw,
+      canvasColor: Fortuna.cpu,
       useMaterial3: true,
     ),
     darkTheme: ThemeData(
@@ -74,10 +76,12 @@ void main() {
         contentTextStyle: Fortuna.font(17, night: true),
         shape: mediumCornerStyle,
         backgroundColor: Fortuna.cpu,
+        surfaceTintColor: Fortuna.cpu,
       ),
       popupMenuTheme: popupMenu,
       scaffoldBackgroundColor: Colors.black,
       splashColor: Fortuna.cwd,
+      canvasColor: Fortuna.cpu,
       useMaterial3: true,
     ),
     themeMode: ThemeMode.system,
@@ -96,6 +100,7 @@ class Fortuna extends StatelessWidget {
   static bool lunaChanged = false;
   static String l = "en";
   static SharedPreferences? sp;
+  static bool showingSnackbar = false;
 
   static Luna emptyLuna() => Luna(calendar);
 
@@ -184,7 +189,7 @@ class Fortuna extends StatelessWidget {
         ),
         actions: <Widget>[
           PopupMenuButton<NumeralType>(
-            icon: Icon(Icons.calendar_month),
+            icon: Icon(Icons.numbers, color: Colors.white),
             tooltip: s('numerals'),
             initialValue: BaseNumeral.findById(selectedNumType),
             //elevation: 0, // In order to fix the grey problem!
@@ -193,6 +198,7 @@ class Fortuna extends StatelessWidget {
               Grid.id.currentState?.setState(() {});
               Fortuna.shake();
             },
+            surfaceTintColor: Fortuna.cpu,
             itemBuilder: (BuildContext c) =>
                 [for (int i = 0; i < BaseNumeral.all.length; i++) i].map((i) {
               NumeralType type = BaseNumeral.all[i];
@@ -284,9 +290,18 @@ class Fortuna extends StatelessWidget {
               ),
             ),
             navButton(context, Icons.outbox, 'navExport', () {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(s('exportNotSupported')),
-                  duration: Duration(seconds: 10)));
+              if (showingSnackbar) return;
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(
+                    SnackBar(
+                        content: Text(s('exportNotSupported')),
+                        duration: Duration(seconds: 10),
+                        onVisible: () {
+                          showingSnackbar = true;
+                        }),
+                  )
+                  .closed
+                  .then((_) => showingSnackbar = false);
             }, false),
             navButton(context, Icons.move_to_inbox, 'navImport', () {
               if (kIsWeb)
@@ -460,87 +475,110 @@ class PanelState extends State<Panel> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 9, bottom: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              InkWell(
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Icon(Icons.arrow_left, color: Fortuna.textColor()),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            InkWell(
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.arrow_left, color: Fortuna.textColor()),
+                ),
+              ),
+              onTap: () => rollCalendar(false, CalendarFields.MONTHS),
+            ),
+            SizedBox(width: arrowDistance),
+            DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                // change 12 in Hebrew
+                items: [for (int i = 1; i <= 12; i++) i]
+                    .map<DropdownMenuItem<int>>(
+                        (int value) => DropdownMenuItem<int>(
+                              value: value,
+                              child: Text(gregorianMonths[value - 1]),
+                            ))
+                    .toList(),
+                value: Panel.luna,
+                onChanged: (i) {
+                  Fortuna.lunaChanged = true;
+                  Panel.luna = i!;
+                  valuesChanged();
+                },
+                style: Fortuna.font(19, bold: true),
+              ),
+            ),
+            const SizedBox(width: 21),
+            SizedBox(
+              width: 54,
+              child: Column(
+                children: [
+                  InkWell(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(Icons.arrow_drop_up,
+                            color: Fortuna.textColor()),
+                      ),
+                    ),
+                    onTap: () => rollCalendar(true, CalendarFields.YEARS),
                   ),
-                ),
-                onTap: () => rollCalendar(false),
-              ),
-              SizedBox(width: arrowDistance),
-              DropdownButtonHideUnderline(
-                child: DropdownButton<int>(
-                  // change 12 in Hebrew
-                  items: [for (int i = 1; i <= 12; i++) i]
-                      .map<DropdownMenuItem<int>>(
-                          (int value) => DropdownMenuItem<int>(
-                                value: value,
-                                child: Text(gregorianMonths[value - 1]),
-                              ))
-                      .toList(),
-                  value: Panel.luna,
-                  onChanged: (i) {
-                    Fortuna.lunaChanged = true;
-                    Panel.luna = i!;
-                    valuesChanged();
-                  },
-                  style: Fortuna.font(19, bold: true),
-                ),
-              ),
-              const SizedBox(width: 21),
-              SizedBox(
-                width: 54,
-                child: TextFormField(
-                  controller: TextEditingController()..text = _annus,
-                  maxLength: 4,
-                  maxLines: 1,
-                  textAlign: TextAlign.left,
-                  keyboardType: TextInputType.number,
-                  style: Fortuna.font(20, bold: true),
-                  decoration: InputDecoration(
-                    counterText: "", // NOT THE DEF VALUE ^
-                    border: InputBorder.none,
+                  TextFormField(
+                    controller: TextEditingController()..text = _annus,
+                    maxLength: 4,
+                    maxLines: 1,
+                    textAlign: TextAlign.left,
+                    keyboardType: TextInputType.number,
+                    style: Fortuna.font(20, bold: true),
+                    decoration: InputDecoration(
+                      counterText: "", // NOT THE DEF VALUE ^
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (s) {
+                      if (s.length != 4) return;
+                      _annus = s;
+                      Panel.annus = s;
+                      valuesChanged();
+                    },
                   ),
-                  onChanged: (s) {
-                    if (s.length != 4) return;
-                    _annus = s;
-                    Panel.annus = s;
-                    valuesChanged();
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              MaterialButton(
-                child: Text(
-                  Fortuna.thisLuna().defVar.showScore(),
-                  style: Fortuna.font(16),
-                ),
-                onPressed: () => Fortuna.thisLuna().changeVar(context, null),
-                // onLongPress: () {},
-                // Apparently not possible in Flutter yet!
-                minWidth: 10,
-              ),
-              SizedBox(width: arrowDistance),
-              InkWell(
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Icon(Icons.arrow_right, color: Fortuna.textColor()),
+                  InkWell(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(Icons.arrow_drop_down,
+                            color: Fortuna.textColor()),
+                      ),
+                    ),
+                    onTap: () => rollCalendar(false, CalendarFields.YEARS),
                   ),
-                ),
-                onTap: () => rollCalendar(true),
+                ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 10),
+            MaterialButton(
+              child: Text(
+                Fortuna.thisLuna().defVar.showScore(),
+                style: Fortuna.font(16),
+              ),
+              onPressed: () => Fortuna.thisLuna().changeVar(context, null),
+              // onLongPress: () {},
+              // Apparently not possible in Flutter yet!
+              minWidth: 10,
+            ),
+            SizedBox(width: arrowDistance),
+            InkWell(
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.arrow_right, color: Fortuna.textColor()),
+                ),
+              ),
+              onTap: () => rollCalendar(true, CalendarFields.MONTHS),
+            ),
+          ],
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 10),
@@ -560,12 +598,20 @@ class PanelState extends State<Panel> {
     Grid.id.currentState?.setState(() {});
   }
 
-  void rollCalendar(bool up) {
+  /// Move calendar in months or years
+  void rollCalendar(bool up, CalendarFields field, [int times = 1]) {
     final jiffy = Jiffy(Fortuna.calendar);
-    if (up)
-      jiffy.add(months: 1);
-    else
-      jiffy.subtract(months: 1);
+    if (up) {
+      if (field == CalendarFields.YEARS)
+        jiffy.add(years: times);
+      else
+        jiffy.add(months: times);
+    } else {
+      if (field == CalendarFields.YEARS)
+        jiffy.subtract(years: times);
+      else
+        jiffy.subtract(months: times);
+    }
     Fortuna.calendar = jiffy.dateTime;
     Fortuna.luna = Fortuna.calendar.toKey();
     Panel.update();
@@ -708,6 +754,8 @@ class GridState extends State<Grid> {
 }
 
 String s(String key) => dict[Fortuna.l]![key]!;
+
+enum CalendarFields { YEARS, MONTHS }
 
 /*TODO:
    * Fix numerals menu
