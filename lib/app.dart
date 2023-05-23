@@ -19,6 +19,9 @@ import 'main.dart';
 import 'numerals.dart';
 import 'vita.dart';
 
+// The newer versions of Flutter are NOT USABLE with Gradle 8!
+// Refer to https://github.com/flutter/flutter/issues/124838
+
 void main() {
   final mediumCornerStyle =
       BeveledRectangleBorder(borderRadius: BorderRadius.circular(12));
