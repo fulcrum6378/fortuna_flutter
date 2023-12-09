@@ -1,47 +1,37 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'dev.flutter.flutter-gradle-plugin'
+}
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
-        localProperties.load(reader)
-    }
-}
-
-def flutterRoot = localProperties.getProperty('flutter.sdk')
-if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
-}
+if (localPropertiesFile.exists())
+    localPropertiesFile.withReader('UTF-8') { reader -> localProperties.load(reader)}
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
-}
+if (flutterVersionCode == null) flutterVersionCode = '1'
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
-}
-
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+if (flutterVersionName == null) flutterVersionName = '1.0'
 
 android {
-    namespace 'ir.mahdiparastesh.fortuna'
-    compileSdk 33
-    buildToolsVersion '34.0.0 rc3'
+    namespace 'ir.mahdiparastesh.fortuna.flutter'
+    compileSdkVersion 34
+    buildToolsVersion = '34.0.0'
 
     defaultConfig {
         applicationId 'ir.mahdiparastesh.fortuna.flutter'
-        minSdk 19
-        targetSdk 33
+        minSdkVersion 26
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_20
+        targetCompatibility JavaVersion.VERSION_20
     }
-    kotlinOptions { jvmTarget = '1.8' }
+    kotlinOptions { jvmTarget = '20' }
     sourceSets { main.java.srcDirs += 'src/main/kotlin' }
 
     buildTypes {
@@ -52,8 +42,5 @@ android {
     }
 }
 
-flutter {
-    source '../..'
-}
-
+flutter { source '../..' }
 dependencies {}

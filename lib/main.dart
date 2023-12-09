@@ -170,7 +170,7 @@ class PanelState extends State<Panel> {
 
   /// Move calendar in months or years
   void rollCalendar(bool up, CalendarFields field, [int times = 1]) {
-    final jiffy = Jiffy(Fortuna.calendar);
+    final jiffy = Jiffy.parseFromDateTime(Fortuna.calendar);
     if (up) {
       if (field == CalendarFields.YEARS)
         jiffy.add(years: times);

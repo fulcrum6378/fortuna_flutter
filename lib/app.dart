@@ -10,7 +10,6 @@ import 'package:flutter_document_picker/flutter_document_picker.dart';
 import 'package:format/format.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:share_plus_platform_interface/share_plus_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 
@@ -18,9 +17,6 @@ import 'dict.dart';
 import 'main.dart';
 import 'numerals.dart';
 import 'vita.dart';
-
-// The newer versions of Flutter are NOT USABLE with Gradle 8!
-// Refer to https://github.com/flutter/flutter/issues/124838
 
 void main() {
   final mediumCornerStyle =
@@ -110,7 +106,7 @@ class Fortuna extends StatelessWidget {
   static Luna thisLuna() => vita?[luna] ?? emptyLuna();
 
   static bool night() =>
-      WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
+      PlatformDispatcher.instance.platformBrightness == Brightness.dark;
 
   static Color textColor([bool? night]) =>
       Color(!(night ?? Fortuna.night()) ? 0xFF777777 : 0xFFFFFFFF);
@@ -446,10 +442,7 @@ String s(String key) => dict[Fortuna.l]![key]!;
 /*TODO:
    * Fix default verbum save problem only in Android?!?
 
-   * Building a Windows app needs Visual Studio installed with its huge size.
-   * Building a Linux app needs Linux, a MacOS app needs MacOS.
-   *
-   * Running "flutter create ." will import default files to Android and iOS too!
-   * Run "flutter "flutter create --platforms=web ."; Add these arguments in
-   * similar situations: "--org=ir.mahdiparastesh.fortuna --project-name=fortuna"
-   */
+ * Running "flutter create ." will import default files to Android and iOS too!
+ * Run "flutter "flutter create --platforms=web ."; Add these arguments in
+ * similar situations: "--org=ir.mahdiparastesh.fortuna --project-name=fortuna"
+ */
