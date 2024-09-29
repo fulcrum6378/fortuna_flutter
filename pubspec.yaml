@@ -1,15 +1,17 @@
 name: fortuna
-description: An application of the Hedonist philosophy.
+description: "An application of the Hedonist philosophy."
 publish_to: 'none'
 version: 3.6.5
 environment:
-  sdk: '>=3.2.3 <4.0.0'
+  sdk: ^3.5.3
 
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.8
 
 dev_dependencies: # force update their build.gradle
+  flutter_lints: ^4.0.0
   # time_machine: ^X.X.X
   path_provider: ^2.1.1
   share_plus: ^7.2.1
