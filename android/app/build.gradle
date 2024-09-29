@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "ir.mahdiparastesh.fortuna"
     compileSdk = 35 //flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = System.getenv("NDK_VERSION") //flutter.ndkVersion
     buildToolsVersion = System.getenv("ANDROID_BUILD_TOOLS_VERSION")
 
     compileOptions {

@@ -8,12 +8,15 @@ allprojects {
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-    def forceBuildToolsVersion = System.getenv("ANDROID_BUILD_TOOLS_VERSION")
 
+    def forceBuildToolsVersion = System.getenv("ANDROID_BUILD_TOOLS_VERSION")
+    def forceNdkVersion = System.getenv("NDK_VERSION")
     afterEvaluate { project ->
         if (project.hasProperty("android")) {
             if (project.property("android").compileSdkVersion != "android-35")
                 android { compileSdkVersion 35 }
+            if (project.property("android").ndkVersion != forceNdkVersion)
+                android { ndkVersion = forceNdkVersion }
             if (project.property("android").buildToolsVersion != forceBuildToolsVersion)
                 android { buildToolsVersion = forceBuildToolsVersion }
         }

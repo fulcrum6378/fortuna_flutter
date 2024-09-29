@@ -82,7 +82,7 @@ packages:
     source: hosted
     version: "7.0.0"
   file_picker:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: file_picker
       sha256: "167bb619cdddaa10ef2907609feb8a79c16dfa479d3afaf960f8e223f754bf12"
@@ -103,7 +103,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_document_picker:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: flutter_document_picker
       sha256: "5229e22fb9ac7939c516b56736714bb92305762cf4027f34aaf9edda229c5004"
@@ -132,7 +132,7 @@ packages:
     source: sdk
     version: "0.0.0"
   format:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: format
       sha256: "94f93703645ec4d7d19f02d7d87617a5463169e252c0d45b125f13a54a90d037"
@@ -148,7 +148,7 @@ packages:
     source: hosted
     version: "0.19.0"
   jiffy:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: jiffy
       sha256: "3497caaa36d36a29033e66803c9739ce6bccbc7e241ca46070f76ee9e6f6eb0c"
@@ -196,7 +196,7 @@ packages:
     source: hosted
     version: "1.9.0"
   path_provider:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: path_provider
       sha256: fec0d61223fba3154d87759e3cc27fe2c8dc498f6386c6d6fc80d1afdd1bf378
@@ -260,7 +260,7 @@ packages:
     source: hosted
     version: "2.1.8"
   share_plus:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: share_plus
       sha256: "468c43f285207c84bcabf5737f33b914ceb8eb38398b91e5e3ad1698d1b72a52"
@@ -276,7 +276,7 @@ packages:
     source: hosted
     version: "5.0.0"
   shared_preferences:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: shared_preferences
       sha256: "746e5369a43170c25816cc472ee016d3a66bc13fcf430c0bc41ad7b4b2922051"
@@ -401,7 +401,7 @@ packages:
     source: hosted
     version: "2.1.4"
   vibration:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: vibration
       sha256: fe8f90e1827f86a4f722b819799ecac8a24789a39c6d562ea316bcaeb8b1ec61

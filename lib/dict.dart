@@ -25,12 +25,12 @@ const Map<String, Map<String, String>> dict = {
         "yet, you can use the Android version instead!",
     "navHelp": "Help",
     "help": "This app is designed based on the \"Hedonist\" philosophy! "
-        "It\'s used to calculate the amount of pleasure and pain one senses in "
+        "It's used to calculate the amount of pleasure and pain one senses in "
         "their life.\n\nYou can enter the quality of your life in a scale "
         "between -3 to +3 for each day.\n\nAlternatively you can estimate the "
         "number of a whole month using the field right to the year field at "
         "the top of the page.\n\nThen you can see how much pleasure and pain "
-        "you\'ve sensed overall in your life.",
+        "you've sensed overall in your life.",
 
     // Numerals
     "numerals": "Numerals",

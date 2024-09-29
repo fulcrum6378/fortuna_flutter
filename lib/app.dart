@@ -1,5 +1,3 @@
-// ignore_for_file: invalid_use_of_protected_member
-
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -90,7 +88,7 @@ void main() {
 }
 
 class Fortuna extends StatelessWidget {
-  Fortuna({Key? key}) : super(key: key);
+  const Fortuna({super.key});
 
   static File? stored;
   static Vita? vita;
@@ -140,7 +138,7 @@ class Fortuna extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (vita == null) vita = Vita();
+    vita ??= Vita();
     if (!lunaChanged) {
       calendar = DateTime.now();
       luna = calendar.toKey();
@@ -148,20 +146,22 @@ class Fortuna extends StatelessWidget {
     }
     if (vita?[luna] == null) vita?[luna] = emptyLuna();
 
-    if (!kIsWeb)
+    if (!kIsWeb) {
       getApplicationSupportDirectory().then((dir) {
         stored = File('${dir.path}/fortuna.vita');
         stored?.exists().then((exists) {
-          if (exists)
+          if (exists) {
             stored?.readAsString().then((data) {
               vita = VitaUtils.load(data);
               Panel.id.currentState?.setState(() {});
               Grid.id.currentState?.setState(() {});
             });
-          else
+          } else {
             vita?.save();
+          }
         });
       });
+    }
 
     final systemOverlayStyle = SystemUiOverlayStyle(
       statusBarColor: Theme.of(context).primaryColor,
@@ -255,7 +255,7 @@ class Fortuna extends StatelessWidget {
                   final sum = scores.sum();
                   final text = format(
                       s('statText'),
-                      ((scores.length == 0)
+                      ((scores.isEmpty)
                               ? 0.0
                               : sum.toDouble() / scores.length.toDouble())
                           .toString(),
@@ -303,7 +303,7 @@ class Fortuna extends StatelessWidget {
                   .then((_) => showingSnackbar = false);
             }, false),
             navButton(context, Icons.move_to_inbox, 'navImport', () {
-              if (kIsWeb)
+              if (kIsWeb) {
                 FilePicker.platform.pickFiles(
                     type: FileType.custom,
                     allowedExtensions: ['json', 'vita']).then((result) {
@@ -318,7 +318,7 @@ class Fortuna extends StatelessWidget {
                       break;
                   }
                 });
-              else
+              } else {
                 FlutterDocumentPicker.openDocument(
                     params: FlutterDocumentPickerParams(allowedFileExtensions: [
                   'json'
@@ -336,21 +336,24 @@ class Fortuna extends StatelessWidget {
                     return;
                   }
                   File(path).readAsBytes().then((bytes) {
-                    if (path.endsWith(".vita"))
+                    if (path.endsWith(".vita")) {
                       importVita(context, bytes);
-                    else
+                    } else {
                       importJson(context, bytes);
+                    }
                   });
                 });
+              }
               Navigator.of(context).pop();
             }),
             navButton(context, Icons.send, 'navSend', () {
-              if (stored != null)
+              if (stored != null) {
                 Share.shareXFiles(
                     [XFile(stored!.path, mimeType: 'application/json')],
                     text: 'fortuna');
-              else if (vita != null)
+              } else if (vita != null) {
                 Share.share(vita!.dump(), subject: s('appName'));
+              }
             }),
             navButton(
               context,
@@ -393,6 +396,7 @@ class Fortuna extends StatelessWidget {
           void Function() onTap,
           [bool isEnabled = true]) =>
       InkWell(
+        onTap: onTap,
         child: Opacity(
           opacity: isEnabled ? 1 : .5,
           child: MouseRegion(
@@ -410,11 +414,10 @@ class Fortuna extends StatelessWidget {
             ),
           ),
         ),
-        onTap: onTap,
       );
 
   void importJson(BuildContext context, Uint8List bytes) {
-    final data = loadLegacyVita(new String.fromCharCodes(bytes));
+    final data = loadLegacyVita(String.fromCharCodes(bytes));
     if (data.keys.any((k) => k.length != 7)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s('invalidFile')), duration: Duration(seconds: 5)));
@@ -424,7 +427,7 @@ class Fortuna extends StatelessWidget {
   }
 
   void importVita(BuildContext context, Uint8List bytes) {
-    importData(context, VitaUtils.load(new String.fromCharCodes(bytes)));
+    importData(context, VitaUtils.load(String.fromCharCodes(bytes)));
   }
 
   void importData(BuildContext context, Vita data) {

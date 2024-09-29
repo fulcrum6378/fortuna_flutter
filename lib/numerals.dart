@@ -19,14 +19,15 @@ abstract class BaseNumeral {
 
   @override
   String toString() {
-    if ((num > 0 || supportsZero) && (num >= 0 || supportsNegative))
+    if ((num > 0 || supportsZero) && (num >= 0 || supportsNegative)) {
       try {
         return parse();
       } catch (e) {
         return defaultStr;
       }
-    else
+    } else {
       return defaultStr;
+    }
   }
 
   static List<NumeralType> all = [
@@ -69,17 +70,14 @@ class NumeralType {
   late String id;
   late bool enlarge;
 
-  NumeralType(String id, [bool enlarge = false]) {
-    this.id = id;
-    this.enlarge = enlarge;
-  }
+  NumeralType(this.id, [this.enlarge = false]);
 }
 
 abstract class AtticBasedNumeral extends BaseNumeral {
   late bool subtract4th;
   bool rtl = false;
 
-  AtticBasedNumeral(int num) : super(num);
+  AtticBasedNumeral(super.num);
 
   @override
   String parse() {
@@ -90,14 +88,15 @@ abstract class AtticBasedNumeral extends BaseNumeral {
       int i = int.parse(n[ii]);
       String base = chars[((ln - ii) - 1) * 2];
       String half = chars[(((ln - ii) - 1) * 2) + 1];
-      if ((i >= 0 && i <= 3) || (subtract4th && i == 4))
+      if ((i >= 0 && i <= 3) || (subtract4th && i == 4)) {
         s.write(base * i);
-      else if (!subtract4th && i == 4)
+      } else if (!subtract4th && i == 4) {
         s.write(base + half);
-      else if ((i >= 5 && i <= 8) || (subtract4th && i == 9))
+      } else if ((i >= 5 && i <= 8) || (subtract4th && i == 9)) {
         s.write(half + (base * (i - 5)));
-      else if (!subtract4th && i == 9)
+      } else if (!subtract4th && i == 9) {
         s.write(base + chars[(((ln - ii) - 1) * 2) + 2]);
+      }
     }
     String ret = s.toString();
     if (rtl) ret = ret.split('').reversed.join();
@@ -106,7 +105,7 @@ abstract class AtticBasedNumeral extends BaseNumeral {
 }
 
 class AtticNumeral extends AtticBasedNumeral {
-  AtticNumeral(int num) : super(num);
+  AtticNumeral(super.num);
 
   @override
   bool subtract4th = true;
@@ -121,7 +120,7 @@ class AtticNumeral extends AtticBasedNumeral {
 }
 
 class EtruscanNumeral extends AtticBasedNumeral {
-  EtruscanNumeral(int num) : super(num);
+  EtruscanNumeral(super.num);
 
   @override
   bool subtract4th = true;
@@ -138,7 +137,7 @@ class EtruscanNumeral extends AtticBasedNumeral {
 }
 
 class RomanNumeral extends AtticBasedNumeral {
-  RomanNumeral(int num) : super(num);
+  RomanNumeral(super.num);
 
   @override
   bool subtract4th = false;
@@ -162,7 +161,7 @@ class RomanNumeral extends AtticBasedNumeral {
 }
 
 abstract class GematriaLikeNumeral extends BaseNumeral {
-  GematriaLikeNumeral(int num) : super(num);
+  GematriaLikeNumeral(super.num);
 
   @override
   String parse() {
@@ -179,7 +178,7 @@ abstract class GematriaLikeNumeral extends BaseNumeral {
 }
 
 class HieroglyphNumeral extends GematriaLikeNumeral {
-  HieroglyphNumeral(int num) : super(num);
+  HieroglyphNumeral(super.num);
 
   @override
   List<String> chars = [
@@ -240,7 +239,7 @@ class HieroglyphNumeral extends GematriaLikeNumeral {
 }
 
 class BrahmiNumeral extends GematriaLikeNumeral {
-  BrahmiNumeral(int num) : super(num);
+  BrahmiNumeral(super.num);
   @override
   List<String> chars = [
     // 1..9
@@ -270,7 +269,7 @@ class BrahmiNumeral extends GematriaLikeNumeral {
 }
 
 class OldPersianNumeral extends BaseNumeral {
-  OldPersianNumeral(int num) : super(num);
+  OldPersianNumeral(super.num);
 
   @override
   List<String> chars = [

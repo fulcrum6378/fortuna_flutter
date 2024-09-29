@@ -1,5 +1,3 @@
-// ignore_for_file: invalid_use_of_protected_member
-
 import 'package:flutter/material.dart';
 import 'package:jiffy/jiffy.dart';
 
@@ -38,10 +36,10 @@ class PanelState extends State<Panel> {
             alignment: Alignment.centerRight,
             child: Visibility(
               visible: Fortuna.thisLuna().verbum != null,
-              child: Fortuna.verbumIcon(),
               maintainState: true,
               maintainAnimation: true,
               maintainSize: true,
+              child: Fortuna.verbumIcon(),
             ),
           ),
         ),
@@ -56,7 +54,7 @@ class PanelState extends State<Panel> {
                   child: Icon(Icons.arrow_left, color: Fortuna.textColor()),
                 ),
               ),
-              onTap: () => rollCalendar(false, CalendarFields.MONTHS),
+              onTap: () => rollCalendar(false, CalendarFields.months),
             ),
             SizedBox(width: arrowDistance),
             DropdownButtonHideUnderline(
@@ -92,7 +90,7 @@ class PanelState extends State<Panel> {
                             color: Fortuna.textColor()),
                       ),
                     ),
-                    onTap: () => rollCalendar(true, CalendarFields.YEARS),
+                    onTap: () => rollCalendar(true, CalendarFields.years),
                   ),
                   TextFormField(
                     controller: TextEditingController()..text = _annus,
@@ -121,21 +119,21 @@ class PanelState extends State<Panel> {
                             color: Fortuna.textColor()),
                       ),
                     ),
-                    onTap: () => rollCalendar(false, CalendarFields.YEARS),
+                    onTap: () => rollCalendar(false, CalendarFields.years),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 10),
             MaterialButton(
-              child: Text(
-                Fortuna.thisLuna().defVar.showScore(),
-                style: Fortuna.font(16),
-              ),
               onPressed: () => Fortuna.thisLuna().changeVar(context, null),
               // onLongPress: () {},
               // Apparently not possible in Flutter yet!
               minWidth: 10,
+              child: Text(
+                Fortuna.thisLuna().defVar.showScore(),
+                style: Fortuna.font(16),
+              ),
             ),
             SizedBox(width: arrowDistance),
             InkWell(
@@ -146,7 +144,7 @@ class PanelState extends State<Panel> {
                   child: Icon(Icons.arrow_right, color: Fortuna.textColor()),
                 ),
               ),
-              onTap: () => rollCalendar(true, CalendarFields.MONTHS),
+              onTap: () => rollCalendar(true, CalendarFields.months),
             ),
           ],
         ),
@@ -172,15 +170,17 @@ class PanelState extends State<Panel> {
   void rollCalendar(bool up, CalendarFields field, [int times = 1]) {
     final jiffy = Jiffy.parseFromDateTime(Fortuna.calendar);
     if (up) {
-      if (field == CalendarFields.YEARS)
+      if (field == CalendarFields.years) {
         jiffy.add(years: times);
-      else
+      } else {
         jiffy.add(months: times);
+      }
     } else {
-      if (field == CalendarFields.YEARS)
+      if (field == CalendarFields.years) {
         jiffy.subtract(years: times);
-      else
+      } else {
         jiffy.subtract(months: times);
+      }
     }
     Fortuna.calendar = jiffy.dateTime;
     Fortuna.luna = Fortuna.calendar.toKey();
@@ -205,19 +205,21 @@ class Grid extends StatefulWidget {
 
 class GridState extends State<Grid> {
   Luna getLuna() {
-    if (Fortuna.vita![Fortuna.luna] == null)
+    if (Fortuna.vita![Fortuna.luna] == null) {
       Fortuna.vita![Fortuna.luna] = Fortuna.emptyLuna();
+    }
     return Fortuna.vita![Fortuna.luna]!;
   }
 
   static int cellsInRow(BuildContext c) {
     final screen = MediaQuery.of(c).size.width;
-    if (screen < 900)
+    if (screen < 900) {
       return 5;
-    else if (screen < 1200)
+    } else if (screen < 1200) {
       return 7;
-    else
+    } else {
       return 10;
+    }
   }
 
   static cellsInColumn(BuildContext c) {
@@ -323,4 +325,4 @@ class GridState extends State<Grid> {
   }
 }
 
-enum CalendarFields { YEARS, MONTHS }
+enum CalendarFields { years, months }

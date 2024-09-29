@@ -1,5 +1,3 @@
-// ignore_for_file: invalid_use_of_protected_member
-
 import 'dart:collection';
 import 'dart:convert';
 
@@ -18,7 +16,7 @@ extension VitaUtils on Vita {
     String? key;
     int dies = 0;
 
-    for (String ln in text.split("\n"))
+    for (String ln in text.split("\n")) {
       if (key == null) {
         if (!ln.startsWith('@')) continue;
         var sn = split(ln, ";", 2);
@@ -43,6 +41,7 @@ extension VitaUtils on Vita {
         vita[key]!.verba[dies] = (sn.length > 1) ? sn[1].loadVitaText() : null;
         dies++;
       }
+    }
     return vita;
   }
 
@@ -52,8 +51,9 @@ extension VitaUtils on Vita {
       sb.write("@$k");
       if (luna.defVar != null) {
         sb.write("~${luna.defVar}");
-        if (luna.verbum?.trim().isNotEmpty == true)
+        if (luna.verbum?.trim().isNotEmpty == true) {
           sb.write(";${luna.verbum!.saveVitaText()}");
+        }
       }
       sb.write("\n");
       var skipped = false;
@@ -67,8 +67,9 @@ extension VitaUtils on Vita {
           skipped = false;
         }
         sb.write(luna.diebus[d]);
-        if (luna.verba[d]?.trim().isNotEmpty == true)
+        if (luna.verba[d]?.trim().isNotEmpty == true) {
           sb.write(";${luna.verba[d]!.saveVitaText()}");
+        }
         sb.write("\n");
       }
       sb.write("\n");
@@ -107,19 +108,21 @@ class Luna {
     showCupertinoModalPopup(
       context: c,
       builder: (BuildContext context) {
-        if (i != null && diebus.length > i && diebus[i] != null)
+        if (i != null && diebus.length > i && diebus[i] != null) {
           selectedVar = scoreToVariabilis(diebus[i]!);
-        else if (defVar != null)
+        } else if (defVar != null) {
           selectedVar = scoreToVariabilis(defVar!);
-        else
+        } else {
           selectedVar = 6;
+        }
 
-        if (i != null && verba.length > i && verba[i] != null)
+        if (i != null && verba.length > i && verba[i] != null) {
           enteredVerbum = verba[i]!;
-        else if (verbum != null)
+        } else if (verbum != null) {
           enteredVerbum = verbum!;
-        else
+        } else {
           enteredVerbum = "";
+        }
 
         return AlertDialog(
           title: Text(s('variabilis') +
@@ -137,18 +140,18 @@ class Luna {
                     useMagnifier: true,
                     magnification: 2,
                     squeeze: 0.7,
+                    itemExtent: 30,
+                    onSelectedItemChanged: (i) => selectedVar = i,
                     children: [
                       for (var i = 0; i <= 12; i++)
                         Padding(
                           padding: EdgeInsets.symmetric(vertical: 4),
                           child: Text(
-                            "${variabilisToScore(i).showScore()}",
+                            variabilisToScore(i).showScore(),
                             style: Fortuna.font(18, bold: true),
                           ),
                         )
                     ],
-                    itemExtent: 30,
-                    onSelectedItemChanged: (i) => selectedVar = i,
                   ),
                 ),
                 SizedBox(
@@ -205,8 +208,9 @@ class Luna {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               onPressed: () {
-                if (Fortuna.vita != null)
+                if (Fortuna.vita != null) {
                   saveScore(i, variabilisToScore(selectedVar), enteredVerbum);
+                }
                 Navigator.of(context).pop();
                 Fortuna.shake();
               },
@@ -238,7 +242,7 @@ class Luna {
       final score = this[v] ?? defVar;
       if (score != null) scores.add(score);
     }
-    return (scores.length == 0) ? 0 : (scores.sum() / scores.length);
+    return (scores.isEmpty) ? 0 : (scores.sum() / scores.length);
   }
 }
 
@@ -259,7 +263,9 @@ extension CalendarKey on DateTime {
 
 String z(Object? n, [int ideal = 2]) {
   var s = n.toString();
-  while (s.length < ideal) s = "0$s";
+  while (s.length < ideal) {
+    s = "0$s";
+  }
   return s;
 }
 
@@ -307,18 +313,22 @@ double variabilisToScore(int variabilis) =>
 extension Sum on List<double> {
   double sum() {
     double value = 0.0;
-    for (var i = 0; i < length; i++) value += this[i];
+    for (var i = 0; i < length; i++) {
+      value += this[i];
+    }
     return value;
   }
 }
 
 Vita loadLegacyVita(String json) {
-  final data = new Map<String, List<dynamic>>.from(jsonDecode(json));
+  final data = Map<String, List<dynamic>>.from(jsonDecode(json));
   final vita = Vita();
   data.forEach((key, value) {
     List<dynamic> rawLuna = value;
     Luna newLuna = Luna(key.makeCalendar(), rawLuna.last);
-    for (int d = 0; d < newLuna.length; d++) newLuna[d] = rawLuna[d];
+    for (int d = 0; d < newLuna.length; d++) {
+      newLuna[d] = rawLuna[d];
+    }
     vita[key] = newLuna;
   });
   return vita;
