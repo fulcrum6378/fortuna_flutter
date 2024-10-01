@@ -1,23 +1,23 @@
 name: fortuna
 description: "An application of the Hedonist philosophy."
 publish_to: 'none'
-version: 3.7.5
+version: 3.7.7
 environment:
   sdk: ^3.5.3
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
 
-  # time_machine: ^X.X.X
-  path_provider: ^2.1.1
-  share_plus: ^10.0.2
+  cupertino_icons: ^1.0.8
   file_picker: ^8.1.2
   flutter_document_picker: ^5.2.3  # forcibly migrate its `namespace` and set `kotlinOptions`!
   format: ^1.4.0
   jiffy: ^6.2.1
+  path_provider: ^2.1.1
+  share_plus: ^10.0.2
   shared_preferences: ^2.2.2
+  # time_machine: ^X.X.X
   vibration: ^2.0.0  # VibrationPlugin.java uses or overrides a deprecated API!
 
 dev_dependencies:

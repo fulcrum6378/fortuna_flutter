@@ -1,16 +1,12 @@
 import 'dart:math';
 
 abstract class BaseNumeral {
-  late int num;
+  late int n;
   bool supportsZero = false;
   bool supportsNegative = false;
 
-  BaseNumeral(int num,
-      [bool supportsZero = false, bool supportsNegative = false]) {
-    this.num = num;
-    this.supportsZero = supportsZero;
-    this.supportsNegative = supportsNegative;
-  }
+  BaseNumeral(this.n,
+      [this.supportsZero = false, this.supportsNegative = false]);
 
   abstract List<String> chars;
   String defaultStr = "NaN";
@@ -19,7 +15,7 @@ abstract class BaseNumeral {
 
   @override
   String toString() {
-    if ((num > 0 || supportsZero) && (num >= 0 || supportsNegative)) {
+    if ((n > 0 || supportsZero) && (n >= 0 || supportsNegative)) {
       try {
         return parse();
       } catch (e) {
@@ -42,20 +38,20 @@ abstract class BaseNumeral {
   static final String key = "numeral_type";
   static final String defType = "arabic";
 
-  static BaseNumeral? construct(String? type, int num) {
+  static BaseNumeral? construct(String? type, int n) {
     switch (type) {
       case 'roman':
-        return RomanNumeral(num);
+        return RomanNumeral(n);
       case 'brahmi':
-        return BrahmiNumeral(num);
+        return BrahmiNumeral(n);
       case 'oldPersian':
-        return OldPersianNumeral(num);
+        return OldPersianNumeral(n);
       case 'etruscan':
-        return EtruscanNumeral(num);
+        return EtruscanNumeral(n);
       case 'attic':
-        return AtticNumeral(num);
+        return AtticNumeral(n);
       case 'hieroglyph':
-        return HieroglyphNumeral(num);
+        return HieroglyphNumeral(n);
       default:
         return null;
     }
@@ -77,15 +73,15 @@ abstract class AtticBasedNumeral extends BaseNumeral {
   late bool subtract4th;
   bool rtl = false;
 
-  AtticBasedNumeral(super.num);
+  AtticBasedNumeral(super.n);
 
   @override
   String parse() {
-    String n = this.num.toString();
-    int ln = n.length;
+    String sn = n.toString();
+    int ln = sn.length;
     StringBuffer s = StringBuffer();
-    for (int ii = 0; ii < n.length; ii++) {
-      int i = int.parse(n[ii]);
+    for (int ii = 0; ii < sn.length; ii++) {
+      int i = int.parse(sn[ii]);
       String base = chars[((ln - ii) - 1) * 2];
       String half = chars[(((ln - ii) - 1) * 2) + 1];
       if ((i >= 0 && i <= 3) || (subtract4th && i == 4)) {
@@ -105,10 +101,10 @@ abstract class AtticBasedNumeral extends BaseNumeral {
 }
 
 class AtticNumeral extends AtticBasedNumeral {
-  AtticNumeral(super.num);
+  AtticNumeral(super.n) {
+    subtract4th = true;
+  }
 
-  @override
-  bool subtract4th = true;
   @override
   List<String> chars = [
     "I", "\ud800\udd43", // 1, 5
@@ -120,12 +116,11 @@ class AtticNumeral extends AtticBasedNumeral {
 }
 
 class EtruscanNumeral extends AtticBasedNumeral {
-  EtruscanNumeral(super.num);
+  EtruscanNumeral(super.n) {
+    subtract4th = true;
+    rtl = true;
+  }
 
-  @override
-  bool subtract4th = true;
-  @override
-  bool rtl = true;
   @override
   List<String> chars = [
     "\uD800\udf20",
@@ -137,10 +132,10 @@ class EtruscanNumeral extends AtticBasedNumeral {
 }
 
 class RomanNumeral extends AtticBasedNumeral {
-  RomanNumeral(super.num);
+  RomanNumeral(super.n) {
+    subtract4th = false;
+  }
 
-  @override
-  bool subtract4th = false;
   @override
   List<String> chars = [
     "I",
@@ -161,15 +156,15 @@ class RomanNumeral extends AtticBasedNumeral {
 }
 
 abstract class GematriaLikeNumeral extends BaseNumeral {
-  GematriaLikeNumeral(super.num);
+  GematriaLikeNumeral(super.n);
 
   @override
   String parse() {
-    String n = this.num.toString();
-    int ln = n.length;
+    String sn = n.toString();
+    int ln = sn.length;
     StringBuffer s = StringBuffer();
-    for (int ii = 0; ii < n.length; ii++) {
-      int i = int.parse(n[ii]);
+    for (int ii = 0; ii < sn.length; ii++) {
+      int i = int.parse(sn[ii]);
       if (i == 0) continue;
       s.write(chars[((((ln - ii) - 1) * 9) - 1) + i]);
     }
@@ -178,7 +173,9 @@ abstract class GematriaLikeNumeral extends BaseNumeral {
 }
 
 class HieroglyphNumeral extends GematriaLikeNumeral {
-  HieroglyphNumeral(super.num);
+  HieroglyphNumeral(super.n) {
+    defaultStr = "\uD80C\uDC4F";
+  }
 
   @override
   List<String> chars = [
@@ -234,12 +231,11 @@ class HieroglyphNumeral extends GematriaLikeNumeral {
     "\uD80C\uDCB5",
     "\uD80C\uDD90"
   ];
-  @override
-  String defaultStr = "\uD80C\uDC4F";
 }
 
 class BrahmiNumeral extends GematriaLikeNumeral {
-  BrahmiNumeral(super.num);
+  BrahmiNumeral(super.n);
+
   @override
   List<String> chars = [
     // 1..9
@@ -269,7 +265,7 @@ class BrahmiNumeral extends GematriaLikeNumeral {
 }
 
 class OldPersianNumeral extends BaseNumeral {
-  OldPersianNumeral(super.num);
+  OldPersianNumeral(super.n);
 
   @override
   List<String> chars = [
@@ -288,17 +284,17 @@ class OldPersianNumeral extends BaseNumeral {
   @override
   String parse() {
     StringBuffer s = StringBuffer();
-    int n = this.num;
-    while (n > 0) {
+    int nn = n;
+    while (nn > 0) {
       int subVal = 0;
       int subChar = 0;
       for (int ch = 0; ch < chars.length; ch++) {
         int charVal = charToInt(ch);
-        if (charVal > n) break;
+        if (charVal > nn) break;
         subChar = ch;
         subVal = charVal;
       }
-      n -= subVal;
+      nn -= subVal;
       s.write(chars[subChar]);
     }
     return s.toString();
