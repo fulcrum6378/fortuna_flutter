@@ -19,7 +19,7 @@ const Map<String, Map<String, String>> dict = {
     "fortunaStat": "Statistics",
     "statText": "Average of Total: {0}\nSum: {1}\nCovering {2} days.",
     "copy": "Copy",
-    "nonJson": "Fortuna only supports *.vita (or legacy *.json) files!",
+    "nonVitaFile": "Fortuna only supports *.vita files!",
     "invalidFile": "This isn't a valid Vita file!",
     "exportNotSupported": "Unfortunately Flutter doesn't support this feature "
         "yet, you can use the Android version instead!",

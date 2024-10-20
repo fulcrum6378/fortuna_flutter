@@ -1,18 +1,40 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'app.dart';
-import 'main.dart';
+import 'panel.dart';
+import 'grid.dart';
 
 typedef Vita = SplayTreeMap<String, Luna>;
 
-extension VitaUtils on Vita {
-  static Vita load(String text) {
-    Vita vita = Vita();
+class VitaRepo {
+  Vita? vita;
+  File? stored;
+
+  Future<void> load(BuildContext context) async {
+    vita ??= Vita();
+    if (!kIsWeb) {
+      Directory dir = await getApplicationSupportDirectory();
+      stored = File('${dir.path}/fortuna.vita');
+      bool? exists = await stored?.exists();
+      if (exists == true) {
+        final String data = await stored!.readAsString();
+        parse(data);
+      } else {
+        save();
+      }
+    }
+    if (context.mounted) updateUI(context);
+  }
+
+  void parse(String text) {
     String? key;
     int dies = 0;
 
@@ -23,7 +45,7 @@ extension VitaUtils on Vita {
         var s = sn[0].split("~");
         key = s[0].substring(1);
         var splitKey = key.split(".");
-        vita[key] = Luna(
+        vita![key] = Luna(
           DateTime(int.parse(splitKey[0]), int.parse(splitKey[1])),
           (s.length > 1) ? double.parse(s[1]) : null,
           (sn.length > 1) ? sn[1].loadVitaText() : null,
@@ -37,17 +59,18 @@ extension VitaUtils on Vita {
         var sn = split(ln, ";", 2);
         var s = sn[0].split(":");
         if (s.length == 2) dies = int.parse(s[0]) - 1;
-        vita[key]!.diebus[dies] = double.parse((s.length > 1) ? s[1] : s[0]);
-        vita[key]!.verba[dies] = (sn.length > 1) ? sn[1].loadVitaText() : null;
+        vita![key]!.diebus[dies] = double.parse((s.length > 1) ? s[1] : s[0]);
+        vita![key]!.verba[dies] = (sn.length > 1) ? sn[1].loadVitaText() : null;
         dies++;
       }
     }
-    return vita;
   }
 
   String dump() {
+    if (vita == null) return '';
+
     StringBuffer sb = StringBuffer();
-    forEach((k, luna) {
+    vita!.forEach((k, luna) {
       sb.write("@$k");
       if (luna.defVar != null) {
         sb.write("~${luna.defVar}");
@@ -77,9 +100,28 @@ extension VitaUtils on Vita {
     return sb.toString();
   }
 
+  void import(BuildContext context, Uint8List data) {
+    vita = Vita();
+    parse(String.fromCharCodes(data));
+    save();
+    updateUI(context);
+  }
+
   void save() {
     if (kIsWeb) return;
-    Fortuna.stored?.writeAsString(dump());
+    stored?.writeAsString(dump());
+  }
+
+  void updateUI(BuildContext context) {
+    context.read<PanelCubit>().update();
+    context.read<GridCubit>().update();
+  }
+
+  Luna getLuna(DateTime calendar) {
+    if (vita![luna] == null) {
+      vita![luna] = Luna(calendar);
+    }
+    Luna luna = vita![luna]!;
   }
 }
 
