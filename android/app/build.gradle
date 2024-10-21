@@ -8,15 +8,15 @@ plugins {
 android {
     namespace = "ir.mahdiparastesh.fortuna"
     compileSdk = 35 //flutter.compileSdkVersion
-    ndkVersion = System.getenv("NDK_VERSION") //flutter.ndkVersion
+    ndkVersion = System.getenv("NDK_VERSION")
     buildToolsVersion = System.getenv("ANDROID_BUILD_TOOLS_VERSION")
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_17
     }
 
     defaultConfig {
@@ -25,12 +25,19 @@ android {
         targetSdk = 35 //flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        signingConfig = signingConfigs.main
     }
 
-    buildTypes {
-        release { // TODO
-            signingConfig = signingConfigs.debug
+    signingConfigs {
+        release {
+            storeFile = file("${System.getenv("JKS_PATH")}")
+            storePassword = "${System.getenv("JKS_PASS")}"
+            keyAlias = "fortuna"
+            keyPassword = "${System.getenv("JKS_PASS")}"
         }
+    }
+    buildTypes {
+        release { signingConfig = signingConfigs.release }
     }
 }
 

@@ -85,7 +85,7 @@ void main() {
     debugShowCheckedModeBanner: false,
     home: MultiRepositoryProvider(
       providers: [
-        RepositoryProvider(create: (_) => VitaRepo()),
+        RepositoryProvider(create: (_) => Vita()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -139,7 +139,7 @@ class Fortuna extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<VitaRepo>().load().then((_) {
+    context.read<Vita>().load().then((_) {
       if (context.mounted) context.read<HomeCubit>().update();
     });
 
@@ -160,33 +160,32 @@ class Fortuna extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        systemOverlayStyle: systemOverlayStyle,
-        toolbarHeight: 60,
-        title: Text(
-          s('appName'),
-          style: const TextStyle(fontFamily: 'MorrisRoman', fontSize: 28),
-        ),
-        actions: <Widget>[
-          PopupMenuButton<NumeralType>(
-            icon: Icon(Icons.numbers, color: Colors.white),
-            tooltip: s('numerals'),
-            initialValue: BaseNumeral.findById(selectedNumType),
-            //elevation: 0, // In order to fix the grey problem!
-            onSelected: (NumeralType item) {
-              Fortuna.sp?.setString(BaseNumeral.key, item.id);
-              context.read<HomeCubit>().update();
-              Fortuna.shake();
-            },
-            surfaceTintColor: Fortuna.cpu,
-            itemBuilder: (BuildContext c) =>
-                [for (int i = 0; i < BaseNumeral.all.length; i++) i].map((i) {
-              NumeralType type = BaseNumeral.all[i];
+          systemOverlayStyle: systemOverlayStyle,
+          toolbarHeight: 60,
+          title: Text(
+            s('appName'),
+            style: const TextStyle(fontFamily: 'MorrisRoman', fontSize: 28),
+          ),
+          actions: <Widget>[
+            PopupMenuButton<NumeralType>(
+              icon: Icon(Icons.numbers, color: Colors.white),
+              tooltip: s('numerals'),
+              initialValue: BaseNumeral.findById(selectedNumType),
+              //elevation: 0, // In order to fix the grey problem!
+              onSelected: (NumeralType item) {
+                Fortuna.sp?.setString(BaseNumeral.key, item.id);
+                context.read<HomeCubit>().update();
+                Fortuna.shake();
+              },
+              surfaceTintColor: Fortuna.cpu,
+              itemBuilder: (BuildContext c) =>
+                  [for (int i = 0; i < BaseNumeral.all.length; i++) i].map((i) {
+                NumeralType type = BaseNumeral.all[i];
 
-              return PopupMenuItem<NumeralType>(
-                value: type,
-                child: Expanded(
-                  child: Row(
-                    children: [
+                return PopupMenuItem<NumeralType>(
+                  value: type,
+                  child: Expanded(
+                    child: Row(children: [
                       Expanded(
                         child: Text(
                           s(type.id),
@@ -198,14 +197,12 @@ class Fortuna extends StatelessWidget {
                         onChanged: (str) {},
                         activeColor: Fortuna.textColor(),
                       ),
-                    ],
+                    ]),
                   ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+                );
+              }).toList(),
+            ),
+          ]),
       drawer: Drawer(
         child: ListView(
           padding: const EdgeInsets.only(top: 40),
@@ -219,7 +216,7 @@ class Fortuna extends StatelessWidget {
                 context: context,
                 builder: (BuildContext context) {
                   final scores = <double>[];
-                  context.read<VitaRepo>().vita?.forEach((key, luna) {
+                  context.read<Vita>().vita?.forEach((key, luna) {
                     for (var v = 0; v < luna.diebus.length; v++) {
                       final score = luna[v] ?? luna.defVar;
                       if (score != null) scores.add(score);
@@ -237,27 +234,26 @@ class Fortuna extends StatelessWidget {
 
                   final buttonStyle = Theme.of(context).textTheme.bodyMedium;
                   return AlertDialog(
-                    title: Text(s('fortunaStat')),
-                    content: Text(text),
-                    actionsAlignment: MainAxisAlignment.end,
-                    actions: <MaterialButton>[
-                      MaterialButton(
-                        child: Text(s('copy'), style: buttonStyle),
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: text));
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(s('done')),
-                            duration: Duration(seconds: 2),
-                          ));
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      MaterialButton(
-                        child: Text(s('ok'), style: buttonStyle),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  );
+                      title: Text(s('fortunaStat')),
+                      content: Text(text),
+                      actionsAlignment: MainAxisAlignment.end,
+                      actions: <MaterialButton>[
+                        MaterialButton(
+                          child: Text(s('copy'), style: buttonStyle),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: text));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(s('done')),
+                              duration: Duration(seconds: 2),
+                            ));
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        MaterialButton(
+                          child: Text(s('ok'), style: buttonStyle),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ]);
                 },
               );
             }),
@@ -306,13 +302,13 @@ class Fortuna extends StatelessWidget {
               Navigator.of(context).pop();
             }),
             navButton(context, Icons.send, 'navSend', () {
-              VitaRepo vr = context.read<VitaRepo>();
+              Vita vr = context.read<Vita>();
               if (vr.stored != null) {
                 Share.shareXFiles([
                   XFile(vr.stored!.path, mimeType: 'application/octet-stream')
                 ], text: 'fortuna');
-              } else if (vr.vita != null) {
-                Share.share(vr.dump(), subject: s('appName'));
+              } else {
+                Share.share(vr.export(), subject: s('appName'));
               }
             }),
             navButton(context, Icons.help, 'navHelp', () {
@@ -355,10 +351,11 @@ class Fortuna extends StatelessWidget {
             child: ListTile(
               leading:
                   Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
-              title: Text(s(title),
-                  style: Fortuna.font(19,
-                      bold: true,
-                      color: Theme.of(context).colorScheme.onPrimary)),
+              title: Text(
+                s(title),
+                style: Fortuna.font(19,
+                    bold: true, color: Theme.of(context).colorScheme.onPrimary),
+              ),
               enabled: isEnabled,
             ),
           ),
@@ -366,7 +363,7 @@ class Fortuna extends StatelessWidget {
       );
 
   void importVita(BuildContext context, Uint8List bytes) {
-    context.read<VitaRepo>().import(bytes);
+    context.read<Vita>().import(bytes);
     context.read<HomeCubit>().update();
     ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s('done')), duration: Duration(seconds: 5)));

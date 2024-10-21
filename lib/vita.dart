@@ -5,10 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
-typedef Vita = SplayTreeMap<String, Luna>;
-
-class VitaRepo {
-  Vita? vita;
+class Vita {
+  SplayTreeMap<String, Luna>? vita;
   File? stored;
 
   void parse(String text) {
@@ -45,7 +43,6 @@ class VitaRepo {
 
   String dump() {
     if (vita == null) return '';
-
     StringBuffer sb = StringBuffer();
     vita!.forEach((k, luna) {
       sb.write("@$k");
@@ -78,7 +75,7 @@ class VitaRepo {
   }
 
   Future<void> load() async {
-    vita ??= Vita();
+    vita ??= SplayTreeMap<String, Luna>();
     if (!kIsWeb) {
       Directory dir = await getApplicationSupportDirectory();
       stored = File('${dir.path}/fortuna.vita');
@@ -92,15 +89,35 @@ class VitaRepo {
     }
   }
 
+  void save() {
+    if (kIsWeb) return;
+    stored?.writeAsString(dump());
+  }
+
   void import(Uint8List data) {
-    vita = Vita();
+    vita = SplayTreeMap<String, Luna>();
     parse(String.fromCharCodes(data));
     save();
   }
 
-  void save() {
-    if (kIsWeb) return;
-    stored?.writeAsString(dump());
+  String export() {
+    reform();
+    return dump();
+  }
+
+  void reform() {
+    List<String> removal = [];
+    bool someNull;
+    vita!.forEach((k, luna) {
+      someNull = false;
+      for (var e in luna.diebus) {
+        if (e != null) someNull = true;
+      }
+      if (!someNull) removal.add(k);
+    });
+    for (var k in removal) {
+      vita!.remove(k);
+    }
   }
 
   Luna get(String key, DateTime calendar) {

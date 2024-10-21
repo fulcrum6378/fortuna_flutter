@@ -39,241 +39,226 @@ class Home extends StatelessWidget {
     return BlocBuilder<HomeCubit, DateTime>(
       builder: (context, calendar) {
         String lunaKey = calendar.toKey();
-        Luna luna = context.read<VitaRepo>().get(lunaKey, calendar);
+        Luna luna = context.read<Vita>().get(lunaKey, calendar);
         final todayCalendar = DateTime.now();
         final todayLunaKey = todayCalendar.toKey();
 
-        return ListView(
-          children: [
-            Column(
-              // BEGIN PANEL
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(top: 20, right: 30),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Visibility(
-                      visible: luna.verbum != null,
-                      maintainState: true,
-                      maintainAnimation: true,
-                      maintainSize: true,
-                      child: Fortuna.verbumIcon(),
+        return ListView(children: [
+          // BEGIN PANEL
+          Stack(children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 14, bottom: 7),
+              child: Column(children: [
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  InkWell(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Padding(
+                        padding: EdgeInsets.all(4),
+                        child:
+                            Icon(Icons.arrow_left, color: Fortuna.textColor()),
+                      ),
+                    ),
+                    onTap: () => context.read<HomeCubit>().update(
+                        calendar: rollCalendarInMonths(calendar, false)),
+                  ),
+                  SizedBox(width: arrowDistance),
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      // change 12 in Hebrew
+                      items: [for (int i = 1; i <= 12; i++) i]
+                          .map<DropdownMenuItem<int>>((int value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text(gregorianMonths[value - 1]),
+                        );
+                      }).toList(),
+                      value: calendar.month,
+                      onChanged: (i) {
+                        context.read<HomeCubit>().update(month: i!);
+                      },
+                      style: Fortuna.font(19, bold: true),
                     ),
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    InkWell(
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Icon(Icons.arrow_left,
-                              color: Fortuna.textColor()),
+                  const SizedBox(width: 21),
+                  SizedBox(
+                    width: 54,
+                    child: Column(children: [
+                      InkWell(
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(Icons.arrow_drop_up,
+                                color: Fortuna.textColor()),
+                          ),
                         ),
-                      ),
-                      onTap: () => context.read<HomeCubit>().update(
-                          calendar: rollCalendarInMonths(calendar, false)),
-                    ),
-                    SizedBox(width: arrowDistance),
-                    DropdownButtonHideUnderline(
-                      child: DropdownButton<int>(
-                        // change 12 in Hebrew
-                        items: [for (int i = 1; i <= 12; i++) i]
-                            .map<DropdownMenuItem<int>>(
-                                (int value) => DropdownMenuItem<int>(
-                                      value: value,
-                                      child: Text(gregorianMonths[value - 1]),
-                                    ))
-                            .toList(),
-                        value: calendar.month,
-                        onChanged: (i) {
-                          context.read<HomeCubit>().update(month: i!);
+                        onTap: () => context.read<HomeCubit>().update(
+                            calendar: rollCalendarInYears(calendar, true)),
+                      ), // TODO onLongClick
+                      TextFormField(
+                        controller: TextEditingController()
+                          ..text = calendar.year.toString(),
+                        maxLength: 4,
+                        maxLines: 1,
+                        textAlign: TextAlign.left,
+                        keyboardType: TextInputType.number,
+                        style: Fortuna.font(20, bold: true),
+                        decoration: InputDecoration(
+                          counterText: "", // NOT THE DEF VALUE ^
+                          border: InputBorder.none,
+                        ),
+                        onChanged: (s) {
+                          if (s.length != 4) return;
+                          context.read<HomeCubit>().update(year: int.parse(s));
                         },
-                        style: Fortuna.font(19, bold: true),
                       ),
-                    ),
-                    const SizedBox(width: 21),
-                    SizedBox(
-                      width: 54,
-                      child: Column(
-                        children: [
-                          InkWell(
-                            child: MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: Padding(
-                                padding: EdgeInsets.all(4),
-                                child: Icon(Icons.arrow_drop_up,
-                                    color: Fortuna.textColor()),
-                              ),
-                            ),
-                            onTap: () => context.read<HomeCubit>().update(
-                                calendar: rollCalendarInYears(calendar, true)),
-                          ), // TODO onLongClick
-                          TextFormField(
-                            controller: TextEditingController()
-                              ..text = calendar.year.toString(),
-                            maxLength: 4,
-                            maxLines: 1,
-                            textAlign: TextAlign.left,
-                            keyboardType: TextInputType.number,
-                            style: Fortuna.font(20, bold: true),
-                            decoration: InputDecoration(
-                              counterText: "", // NOT THE DEF VALUE ^
-                              border: InputBorder.none,
-                            ),
-                            onChanged: (s) {
-                              if (s.length != 4) return;
-                              context
-                                  .read<HomeCubit>()
-                                  .update(year: int.parse(s));
-                            },
+                      InkWell(
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(Icons.arrow_drop_down,
+                                color: Fortuna.textColor()),
                           ),
-                          InkWell(
-                            child: MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: Padding(
-                                padding: EdgeInsets.all(4),
-                                child: Icon(Icons.arrow_drop_down,
-                                    color: Fortuna.textColor()),
-                              ),
-                            ),
-                            onTap: () => context.read<HomeCubit>().update(
-                                calendar: rollCalendarInYears(calendar, false)),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    MaterialButton(
-                      onPressed: () => changeVar(context, lunaKey, luna, null),
-                      // onLongPress: () {},
-                      // Apparently not possible in Flutter yet!
-                      minWidth: 10,
-                      child: Text(
-                        luna.defVar.showScore(),
-                        style: Fortuna.font(16),
-                      ),
-                    ),
-                    SizedBox(width: arrowDistance),
-                    InkWell(
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Icon(Icons.arrow_right,
-                              color: Fortuna.textColor()),
                         ),
+                        onTap: () => context.read<HomeCubit>().update(
+                            calendar: rollCalendarInYears(calendar, false)),
                       ),
-                      onTap: () => context.read<HomeCubit>().update(
-                          calendar: rollCalendarInMonths(calendar, true)),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    luna.mean().toString(),
-                    style: Fortuna.font(15),
+                    ]),
                   ),
-                ),
-              ],
-            ),
-            // END PANEL
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height:
-                  (cellSize(context) / aspectRatio) * cellsInColumn(context),
-              child: GridView.count(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                childAspectRatio: aspectRatio,
-                crossAxisCount: cellsInRow(context),
-                children: [for (var i = 0; i < calendar.lunaMaxima(); i++) i]
-                    .map((i) {
-                  double? score = luna[i] ?? luna.defVar;
-                  bool isEstimated = luna[i] == null && luna.defVar != null;
-
-                  Color bg, tc;
-                  if (score != null && score > 0) {
-                    tc = Theme.of(context).colorScheme.onPrimary;
-                    bg = (!Fortuna.night() ? Fortuna.cp : Fortuna.cpd)
-                        .withAlpha(
-                            ((score / ScoreUtils.MAX_RANGE) * 256).toInt() - 1);
-                  } else if (score != null && score < 0) {
-                    tc = Theme.of(context).colorScheme.onPrimary;
-                    bg = (!Fortuna.night() ? Fortuna.cs : Fortuna.csd)
-                        .withAlpha(
-                            ((-score / ScoreUtils.MAX_RANGE) * 256).toInt() -
-                                1);
-                  } else {
-                    tc = Theme.of(context).textTheme.bodyMedium!.color!;
-                    bg = Colors.transparent;
-                  }
-
-                  String selectedNumType =
-                      Fortuna.sp?.getString(BaseNumeral.key) ??
-                          BaseNumeral.defType;
-                  bool enlarge = BaseNumeral.findById(selectedNumType).enlarge;
-
-                  return InkWell(
-                    onTap: () => changeVar(context, lunaKey, luna, i),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: bg,
-                        border: !(lunaKey == todayLunaKey &&
-                                todayCalendar.day == i + 1)
-                            ? normalBorder
-                            : Border.all(
-                                width: 5,
-                                color: Color(
-                                    !Fortuna.night() ? 0x44000000 : 0x44FFFFFF),
-                              ),
-                      ),
-                      child: Stack(
-                        children: [
-                          Visibility(
-                            visible: luna.verba[i] != null,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: 6, top: 6),
-                              child: Align(
-                                alignment: Alignment.topRight,
-                                child: Fortuna.verbumIcon(tc),
-                              ),
-                            ),
-                          ),
-                          Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  BaseNumeral.construct(selectedNumType, i + 1)
-                                          ?.toString() ??
-                                      (i + 1).toString(),
-                                  style: Fortuna.font(
-                                    !enlarge ? 18 : 34,
-                                    color: tc,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  (isEstimated ? "c. " : "") +
-                                      score.showScore(),
-                                  style: Fortuna.font(13, color: tc),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
+                  const SizedBox(width: 10),
+                  MaterialButton(
+                    onPressed: () => changeVar(context, lunaKey, luna, null),
+                    // onLongPress: () {},
+                    // Apparently not possible in Flutter yet!
+                    minWidth: 10,
+                    child: Text(
+                      luna.defVar.showScore(),
+                      style: Fortuna.font(16),
+                    ),
+                  ),
+                  SizedBox(width: arrowDistance),
+                  InkWell(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Padding(
+                        padding: EdgeInsets.all(4),
+                        child:
+                            Icon(Icons.arrow_right, color: Fortuna.textColor()),
                       ),
                     ),
-                  );
-                }).toList(),
+                    onTap: () => context
+                        .read<HomeCubit>()
+                        .update(calendar: rollCalendarInMonths(calendar, true)),
+                  ),
+                ]),
+                Text(
+                  luna.mean().toString(),
+                  style: Fortuna.font(15),
+                ),
+              ]),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 20, right: 30),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Visibility(
+                  visible: luna.verbum != null,
+                  maintainState: true,
+                  maintainAnimation: true,
+                  maintainSize: true,
+                  child: Fortuna.verbumIcon(),
+                ),
               ),
             ),
-          ],
-        );
+          ]),
+          // END PANEL
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: (cellSize(context) / aspectRatio) * cellsInColumn(context),
+            child: GridView.count(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              childAspectRatio: aspectRatio,
+              crossAxisCount: cellsInRow(context),
+              children:
+                  [for (var i = 0; i < calendar.lunaMaxima(); i++) i].map((i) {
+                double? score = luna[i] ?? luna.defVar;
+                bool isEstimated = luna[i] == null && luna.defVar != null;
+
+                Color bg, tc;
+                if (score != null && score > 0) {
+                  tc = Theme.of(context).colorScheme.onPrimary;
+                  bg = (!Fortuna.night() ? Fortuna.cp : Fortuna.cpd).withAlpha(
+                      ((score / ScoreUtils.MAX_RANGE) * 256).toInt() - 1);
+                } else if (score != null && score < 0) {
+                  tc = Theme.of(context).colorScheme.onPrimary;
+                  bg = (!Fortuna.night() ? Fortuna.cs : Fortuna.csd).withAlpha(
+                      ((-score / ScoreUtils.MAX_RANGE) * 256).toInt() - 1);
+                } else {
+                  tc = Theme.of(context).textTheme.bodyMedium!.color!;
+                  bg = Colors.transparent;
+                }
+
+                String selectedNumType =
+                    Fortuna.sp?.getString(BaseNumeral.key) ??
+                        BaseNumeral.defType;
+                bool enlarge = BaseNumeral.findById(selectedNumType).enlarge;
+
+                return InkWell(
+                  onTap: () => changeVar(context, lunaKey, luna, i),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: bg,
+                      border: !(lunaKey == todayLunaKey &&
+                              todayCalendar.day == i + 1)
+                          ? normalBorder
+                          : Border.all(
+                              width: 5,
+                              color: Color(
+                                  !Fortuna.night() ? 0x44000000 : 0x44FFFFFF),
+                            ),
+                    ),
+                    child: Stack(children: [
+                      Visibility(
+                        visible: luna.verba[i] != null,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 6, top: 6),
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: Fortuna.verbumIcon(tc),
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              BaseNumeral.construct(selectedNumType, i + 1)
+                                      ?.toString() ??
+                                  (i + 1).toString(),
+                              style: Fortuna.font(
+                                !enlarge ? 18 : 34,
+                                color: tc,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              (isEstimated ? "c. " : "") + score.showScore(),
+                              style: Fortuna.font(13, color: tc),
+                            ),
+                          ],
+                        ),
+                      )
+                    ]),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ]);
       },
     );
   }
@@ -293,7 +278,7 @@ class Home extends StatelessWidget {
     if (up) {
       jiffy = jiffy.add(months: times);
     } else {
-      jiffy = jiffy.subtract(years: times);
+      jiffy = jiffy.subtract(months: times);
     }
     return jiffy.dateTime;
   }
@@ -351,59 +336,56 @@ class Home extends StatelessWidget {
               ((i != null) ? "$key.${z(i + 1)}" : s('defValue'))),
           content: SizedBox(
             height: 270,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 200,
-                  child: CupertinoPicker(
-                    backgroundColor: Colors.transparent,
-                    scrollController:
-                        FixedExtentScrollController(initialItem: selectedVar),
-                    useMagnifier: true,
-                    magnification: 2,
-                    squeeze: 0.7,
-                    itemExtent: 30,
-                    onSelectedItemChanged: (i) => selectedVar = i,
-                    children: [
-                      for (var i = 0; i <= 12; i++)
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 4),
-                          child: Text(
-                            variabilisToScore(i).showScore(),
-                            style: Fortuna.font(18, bold: true),
-                          ),
-                        )
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 70,
-                  // FractionallySizedBox didn't fix it!
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 14),
-                      child: TextFormField(
-                        controller: TextEditingController()
-                          ..text = enteredVerbum,
-                        maxLines: 5,
-                        textAlign: TextAlign.start,
-                        keyboardType: TextInputType.text,
-                        style: Fortuna.font(18, bold: true),
-                        decoration: InputDecoration(
-                          counterText: "",
-                          border: InputBorder.none,
+            child: Column(children: [
+              SizedBox(
+                height: 200,
+                child: CupertinoPicker(
+                  backgroundColor: Colors.transparent,
+                  scrollController:
+                      FixedExtentScrollController(initialItem: selectedVar),
+                  useMagnifier: true,
+                  magnification: 2,
+                  squeeze: 0.7,
+                  itemExtent: 30,
+                  onSelectedItemChanged: (i) => selectedVar = i,
+                  children: [
+                    for (var i = 0; i <= 12; i++)
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          variabilisToScore(i).showScore(),
+                          style: Fortuna.font(18, bold: true),
                         ),
-                        onChanged: (s) => enteredVerbum = s,
+                      )
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 70,
+                // FractionallySizedBox didn't fix it!
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14),
+                    child: TextFormField(
+                      controller: TextEditingController()..text = enteredVerbum,
+                      maxLines: 5,
+                      textAlign: TextAlign.start,
+                      keyboardType: TextInputType.text,
+                      style: Fortuna.font(18, bold: true),
+                      decoration: InputDecoration(
+                        counterText: "",
+                        border: InputBorder.none,
                       ),
+                      onChanged: (s) => enteredVerbum = s,
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ]),
           ),
           actions: <MaterialButton>[
             MaterialButton(
@@ -457,7 +439,7 @@ class Home extends StatelessWidget {
       luna.defVar = score;
       luna.verbum = verbum;
     }
-    context.read<VitaRepo>().set(key, luna);
+    context.read<Vita>().set(key, luna);
     context.read<HomeCubit>().update();
     Navigator.of(context).pop();
     Fortuna.shake();
