@@ -1,7 +1,6 @@
-const Map<String, Map<String, String>> dict = {
+const Map<String, Map<String, String>> lang = {
   'en': {
     "appName": "Fortuna",
-    "variabilis": "Variabilis: ",
     "year": "Year",
     "save": "Save",
     "cancel": "Cancel",

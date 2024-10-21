@@ -11,7 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 
-import 'dict.dart';
+import 'lang.dart';
 import 'home.dart';
 import 'numerals.dart';
 import 'vita.dart';
@@ -370,7 +370,7 @@ class Fortuna extends StatelessWidget {
   }
 }
 
-String s(String key) => dict[Fortuna.l]![key]!;
+String s(String key) => lang[Fortuna.l]![key]!;
 
 /*TODO:
    * Fix default verbum save problem only in Android?!?

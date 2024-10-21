@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jiffy/jiffy.dart';
 
-import 'dict.dart';
+import 'lang.dart';
 import 'main.dart';
 import 'numerals.dart';
 import 'vita.dart';
@@ -332,8 +332,7 @@ class Home extends StatelessWidget {
         }
 
         return AlertDialog(
-          title: Text(s('variabilis') +
-              ((i != null) ? "$key.${z(i + 1)}" : s('defValue'))),
+          title: Text((i != null) ? "$key.${z(i + 1)}" : s('defValue')),
           content: SizedBox(
             height: 270,
             child: Column(children: [
