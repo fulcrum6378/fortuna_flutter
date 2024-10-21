@@ -1,38 +1,15 @@
 import 'dart:collection';
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
-
-import 'app.dart';
-import 'panel.dart';
-import 'grid.dart';
 
 typedef Vita = SplayTreeMap<String, Luna>;
 
 class VitaRepo {
   Vita? vita;
   File? stored;
-
-  Future<void> load(BuildContext context) async {
-    vita ??= Vita();
-    if (!kIsWeb) {
-      Directory dir = await getApplicationSupportDirectory();
-      stored = File('${dir.path}/fortuna.vita');
-      bool? exists = await stored?.exists();
-      if (exists == true) {
-        final String data = await stored!.readAsString();
-        parse(data);
-      } else {
-        save();
-      }
-    }
-    if (context.mounted) updateUI(context);
-  }
 
   void parse(String text) {
     String? key;
@@ -100,11 +77,25 @@ class VitaRepo {
     return sb.toString();
   }
 
-  void import(BuildContext context, Uint8List data) {
+  Future<void> load() async {
+    vita ??= Vita();
+    if (!kIsWeb) {
+      Directory dir = await getApplicationSupportDirectory();
+      stored = File('${dir.path}/fortuna.vita');
+      bool? exists = await stored?.exists();
+      if (exists == true) {
+        final String data = await stored!.readAsString();
+        parse(data);
+      } else {
+        save();
+      }
+    }
+  }
+
+  void import(Uint8List data) {
     vita = Vita();
     parse(String.fromCharCodes(data));
     save();
-    updateUI(context);
   }
 
   void save() {
@@ -112,16 +103,16 @@ class VitaRepo {
     stored?.writeAsString(dump());
   }
 
-  void updateUI(BuildContext context) {
-    context.read<PanelCubit>().update();
-    context.read<GridCubit>().update();
+  Luna get(String key, DateTime calendar) {
+    if (vita![key] == null) {
+      vita![key] = Luna(calendar);
+    }
+    return vita![key]!;
   }
 
-  Luna getLuna(DateTime calendar) {
-    if (vita![luna] == null) {
-      vita![luna] = Luna(calendar);
-    }
-    Luna luna = vita![luna]!;
+  void set(String key, Luna luna) {
+    vita![key] = luna;
+    save();
   }
 }
 
@@ -142,141 +133,6 @@ class Luna {
   operator [](int index) => diebus[index];
 
   operator []=(int index, double? value) => diebus[index] = value;
-
-  static int selectedVar = 6;
-  static String enteredVerbum = "";
-
-  void changeVar(BuildContext c, int? i) {
-    showCupertinoModalPopup(
-      context: c,
-      builder: (BuildContext context) {
-        if (i != null && diebus.length > i && diebus[i] != null) {
-          selectedVar = scoreToVariabilis(diebus[i]!);
-        } else if (defVar != null) {
-          selectedVar = scoreToVariabilis(defVar!);
-        } else {
-          selectedVar = 6;
-        }
-
-        if (i != null && verba.length > i && verba[i] != null) {
-          enteredVerbum = verba[i]!;
-        } else if (verbum != null) {
-          enteredVerbum = verbum!;
-        } else {
-          enteredVerbum = "";
-        }
-
-        return AlertDialog(
-          title: Text(s('variabilis') +
-              ((i != null) ? "${Fortuna.luna}.${z(i + 1)}" : s('defValue'))),
-          content: SizedBox(
-            height: 270,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 200,
-                  child: CupertinoPicker(
-                    backgroundColor: Colors.transparent,
-                    scrollController:
-                        FixedExtentScrollController(initialItem: selectedVar),
-                    useMagnifier: true,
-                    magnification: 2,
-                    squeeze: 0.7,
-                    itemExtent: 30,
-                    onSelectedItemChanged: (i) => selectedVar = i,
-                    children: [
-                      for (var i = 0; i <= 12; i++)
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 4),
-                          child: Text(
-                            variabilisToScore(i).showScore(),
-                            style: Fortuna.font(18, bold: true),
-                          ),
-                        )
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 70,
-                  // FractionallySizedBox didn't fix it!
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 14),
-                      child: TextFormField(
-                        controller: TextEditingController()
-                          ..text = enteredVerbum,
-                        maxLines: 5,
-                        textAlign: TextAlign.start,
-                        keyboardType: TextInputType.text,
-                        style: Fortuna.font(18, bold: true),
-                        decoration: InputDecoration(
-                          counterText: "",
-                          border: InputBorder.none,
-                        ),
-                        onChanged: (s) => enteredVerbum = s,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: <MaterialButton>[
-            MaterialButton(
-              child: Text(
-                s('clear'),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              onPressed: () {
-                if (Fortuna.vita != null) saveScore(i, null, null);
-                Navigator.of(context).pop();
-                Fortuna.shake();
-              },
-            ),
-            MaterialButton(
-              child: Text(
-                s('cancel'),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            MaterialButton(
-              child: Text(
-                s('save'),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              onPressed: () {
-                if (Fortuna.vita != null) {
-                  saveScore(i, variabilisToScore(selectedVar), enteredVerbum);
-                }
-                Navigator.of(context).pop();
-                Fortuna.shake();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void saveScore(int? i, double? score, String? verbum) {
-    if (verbum?.isEmpty == true) verbum = null;
-    if (i != null) {
-      diebus[i] = score;
-      verba[i] = verbum;
-    } else {
-      defVar = score;
-      this.verbum = verbum;
-    }
-    Fortuna.vita![Fortuna.luna] = this;
-    Fortuna.vita!.save();
-    Grid.id.currentState?.setState(() {});
-    Panel.id.currentState?.setState(() {});
-  }
 
   double mean() {
     final scores = <double>[];
@@ -360,18 +216,4 @@ extension Sum on List<double> {
     }
     return value;
   }
-}
-
-Vita loadLegacyVita(String json) {
-  final data = Map<String, List<dynamic>>.from(jsonDecode(json));
-  final vita = Vita();
-  data.forEach((key, value) {
-    List<dynamic> rawLuna = value;
-    Luna newLuna = Luna(key.makeCalendar(), rawLuna.last);
-    for (int d = 0; d < newLuna.length; d++) {
-      newLuna[d] = rawLuna[d];
-    }
-    vita[key] = newLuna;
-  });
-  return vita;
 }
