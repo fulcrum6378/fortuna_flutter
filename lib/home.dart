@@ -333,12 +333,11 @@ class Home extends StatelessWidget {
 
         return AlertDialog(
           title: Text((i != null) ? "$key.${z(i + 1)}" : s('defValue')),
-          content: SizedBox(
-            height: 270,
-            child: Column(children: [
-              SizedBox(
-                height: 200,
-                child: CupertinoPicker(
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            SizedBox(
+              height: 200,
+              child: Stack(children: [
+                CupertinoPicker(
                   backgroundColor: Colors.transparent,
                   scrollController:
                       FixedExtentScrollController(initialItem: selectedVar),
@@ -358,34 +357,54 @@ class Home extends StatelessWidget {
                       )
                   ],
                 ),
-              ),
-              SizedBox(
-                height: 70,
-                // FractionallySizedBox didn't fix it!
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                Align(
+                  alignment: Alignment.bottomLeft,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 14),
+                    padding: EdgeInsets.only(left: 10),
                     child: TextFormField(
-                      controller: TextEditingController()..text = enteredVerbum,
-                      maxLines: 5,
+                      controller: TextEditingController()..text = "",//TODO
+                      maxLines: 1,
                       textAlign: TextAlign.start,
-                      keyboardType: TextInputType.text,
-                      style: Fortuna.font(18, bold: true),
+                      style: TextStyle(fontSize: 19),
                       decoration: InputDecoration(
-                        counterText: "",
                         border: InputBorder.none,
+                        hintText: '😃',
+                        hintStyle: TextStyle(
+                          color: Colors.black.withOpacity(0.5),
+                        ),
                       ),
-                      onChanged: (s) => enteredVerbum = s,
+                      //onChanged: (s) => enteredVerbum = s,
                     ),
                   ),
                 ),
+              ]),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 10, left: 10, right: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white70,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 14),
+                  child: TextFormField(
+                    controller: TextEditingController()..text = enteredVerbum,
+                    minLines: 1,
+                    maxLines: 5,
+                    textAlign: TextAlign.start,
+                    keyboardType: TextInputType.text,
+                    style: Fortuna.font(18),
+                    decoration: InputDecoration(
+                      counterText: "",
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (s) => enteredVerbum = s,
+                  ),
+                ),
               ),
-            ]),
-          ),
+            ),
+          ]),
           actions: <MaterialButton>[
             MaterialButton(
               child: Text(
