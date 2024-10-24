@@ -11,8 +11,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 
-import 'lang.dart';
 import 'home.dart';
+import 'lang.dart';
 import 'numerals.dart';
 import 'vita.dart';
 

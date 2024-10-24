@@ -310,7 +310,7 @@ class Home extends StatelessWidget {
 
   void changeVar(BuildContext c, String key, Luna luna, int? i) {
     int selectedVar = 6;
-    String enteredVerbum = "";
+    String enteredEmoji = "", enteredVerbum = "";
 
     showCupertinoModalPopup(
       context: c,
@@ -321,6 +321,14 @@ class Home extends StatelessWidget {
           selectedVar = scoreToVariabilis(luna.defVar!);
         } else {
           selectedVar = 6;
+        }
+
+        if (i != null && luna.emojis.length > i && luna.emojis[i] != null) {
+          enteredEmoji = luna.emojis[i]!;
+        } else if (luna.emoji != null) {
+          enteredEmoji = luna.emoji!;
+        } else {
+          enteredEmoji = "";
         }
 
         if (i != null && luna.verba.length > i && luna.verba[i] != null) {
@@ -362,7 +370,7 @@ class Home extends StatelessWidget {
                   child: Padding(
                     padding: EdgeInsets.only(left: 10),
                     child: TextFormField(
-                      controller: TextEditingController()..text = "",//TODO
+                      controller: TextEditingController()..text = enteredEmoji,
                       maxLines: 1,
                       textAlign: TextAlign.start,
                       style: TextStyle(fontSize: 19),
