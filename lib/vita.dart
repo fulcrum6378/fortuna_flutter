@@ -1,9 +1,9 @@
-import "dart:collection";
-import "dart:io";
+import 'dart:collection';
+import 'dart:io';
 
-import "package:flutter/foundation.dart";
-import "package:flutter/material.dart";
-import "package:path_provider/path_provider.dart";
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Representation of the VITA file type as [SplayTreeMap]<String, Luna>
 ///
@@ -18,7 +18,7 @@ class Vita {
     vita ??= SplayTreeMap<String, Luna>();
     if (!kIsWeb) {
       Directory dir = await getApplicationSupportDirectory();
-      stored = File("${dir.path}/fortuna.vita");
+      stored = File('${dir.path}/fortuna.vita');
       bool? exists = await stored?.exists();
       if (exists == true) {
         final String data = await stored!.readAsString();
@@ -34,13 +34,13 @@ class Vita {
     String? key;
     int dies = 0;
 
-    for (String ln in text.split("\n")) {
+    for (String ln in text.split('\n')) {
       if (key == null) {
-        if (!ln.startsWith("@")) continue;
-        var sn = split(ln, ";", 3);
-        var s = sn[0].split("~");
+        if (!ln.startsWith('@')) continue;
+        var sn = split(ln, ';', 3);
+        var s = sn[0].split('~');
         key = s[0].substring(1);
-        var splitKey = key.split(".");
+        var splitKey = key.split('.');
         vita![key] = Luna(
           DateTime(int.parse(splitKey[0]), int.parse(splitKey[1])),
           (s.length > 1) ? double.parse(s[1]) : null,
@@ -53,8 +53,8 @@ class Vita {
           key = null;
           continue;
         }
-        var sn = split(ln, ";", 3);
-        var s = sn[0].split(":");
+        var sn = split(ln, ';', 3);
+        var s = sn[0].split(':');
         if (s.length == 2) dies = int.parse(s[0]) - 1;
         vita![key]!.diebus[dies] = double.parse((s.length > 1) ? s[1] : s[0]);
         vita![key]!.emojis[dies] =
@@ -70,20 +70,20 @@ class Vita {
     StringBuffer sb = StringBuffer();
     bool hasVerbum = false;
     vita!.forEach((k, luna) {
-      sb.write("@$k");
+      sb.write('@$k');
       if (luna.defVar != null) {
-        sb.write("~${luna.defVar!.writeScore()}");
+        sb.write('~${luna.defVar!.writeScore()}');
         hasVerbum = luna.verbum?.trim().isNotEmpty == true;
         if (luna.emoji?.isNotEmpty == true) {
-          sb.write(";${luna.emoji}");
+          sb.write(';${luna.emoji}');
         } else if (hasVerbum) {
-          sb.write(";");
+          sb.write(';');
         }
         if (hasVerbum) {
-          sb.write(";${luna.verbum!.saveVitaText()}");
+          sb.write(';${luna.verbum!.saveVitaText()}');
         }
       }
-      sb.write("\n");
+      sb.write('\n');
 
       var skipped = false;
       for (int d = 0; d < luna.diebus.length; d++) {
@@ -92,22 +92,22 @@ class Vita {
           continue;
         }
         if (skipped) {
-          sb.write("${d + 1}:");
+          sb.write('${d + 1}:');
           skipped = false;
         }
         sb.write(luna.diebus[d]);
         hasVerbum = luna.verba[d]?.trim().isNotEmpty == true;
         if (luna.emojis[d]?.isNotEmpty == true) {
-          sb.write(";${luna.emojis[d]!}");
+          sb.write(';${luna.emojis[d]!}');
         } else if (hasVerbum) {
-          sb.write(";");
+          sb.write(';');
         }
         if (hasVerbum) {
-          sb.write(";${luna.verba[d]!.saveVitaText()}");
+          sb.write(';${luna.verba[d]!.saveVitaText()}');
         }
-        sb.write("\n");
+        sb.write('\n');
       }
-      sb.write("\n");
+      sb.write('\n');
     });
     return sb.toString();
   }
@@ -196,7 +196,7 @@ extension CalendarKey on DateTime {
   // Months are in 1..12 in Dart.
 
   String toKey() {
-    return "${z(year, 4)}.${z(month)}";
+    return '${z(year, 4)}.${z(month)}';
   }
 
   int daysInMonth() => DateTimeRange(
@@ -210,20 +210,20 @@ extension CalendarKey on DateTime {
 String z(Object? n, [int ideal = 2]) {
   var s = n.toString();
   while (s.length < ideal) {
-    s = "0$s";
+    s = '0$s';
   }
   return s;
 }
 
 extension StringUtils on String {
   DateTime makeCalendar() {
-    final spl = this.split(".");
+    final spl = this.split('.');
     return DateTime(int.parse(spl[0]), int.parse(spl[1]) - 1, 1);
   }
 
-  String loadVitaText() => replaceAll("\\n", "\n");
+  String loadVitaText() => replaceAll('\\n', '\n');
 
-  String saveVitaText() => replaceAll("\n", "\\n");
+  String saveVitaText() => replaceAll('\n', '\\n');
 }
 
 List<String> split(String string, String pattern, [int limit = 0]) {
@@ -252,7 +252,7 @@ extension ScoreUtils on double {
 }
 
 extension ScoreNullableUtils on double? {
-  String showScore() => (this != 0.0) ? (this?.toString() ?? "_") : "0";
+  String showScore() => (this != 0.0) ? (this?.toString() ?? '_') : '0';
 }
 
 int scoreToVariabilis(double score) => (-(score * 2.0) + 6.0).toInt();

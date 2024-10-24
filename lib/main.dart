@@ -100,8 +100,9 @@ void main() {
 class Fortuna extends StatelessWidget {
   const Fortuna({super.key});
 
-  static String l = "en";
+  static String l = 'en';
   static SharedPreferences? sp;
+  static late List<String> emojis;
   static bool showingSnackbar = false;
 
   static bool night() =>
@@ -134,9 +135,6 @@ class Fortuna extends StatelessWidget {
     Vibration.vibrate(duration: 40, amplitude: 100);
   }
 
-  static Icon verbumIcon([Color? tc]) =>
-      Icon(Icons.chat_sharp, color: tc ?? textColor(), size: 19);
-
   @override
   Widget build(BuildContext context) {
     context.read<Vita>().load().then((_) {
@@ -157,6 +155,10 @@ class Fortuna extends StatelessWidget {
         Fortuna.sp?.getString(BaseNumeral.key) ?? BaseNumeral.defType;
 
     Vibration.hasVibrator().then((value) => canShake = value == true);
+
+    rootBundle
+        .loadString('assets/emojis.txt')
+        .then((data) => emojis = data.split(' '));
 
     return Scaffold(
       appBar: AppBar(
@@ -287,7 +289,7 @@ class Fortuna extends StatelessWidget {
                             allowedMimeTypes: ['application/octet-stream']))
                     .then((path) {
                   if (!context.mounted || path == null) return;
-                  if (!path.endsWith(".vita")) {
+                  if (!path.endsWith('.vita')) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(s('nonVitaFile')),
                         duration: Duration(seconds: 5)));
@@ -375,7 +377,7 @@ String s(String key) => lang[Fortuna.l]![key]!;
 /*TODO:
    * Fix default verbum save problem only in Android?!?
 
- * Running "flutter create ." will import default files to Android and iOS too!
- * Run "flutter "flutter create --platforms=web ."; Add these arguments in
- * similar situations: "--org=ir.mahdiparastesh.fortuna --project-name=fortuna"
+ * Running 'flutter create .' will import default files to Android and iOS too!
+ * Run 'flutter 'flutter create --platforms=web .'; Add these arguments in
+ * similar situations: '--org=ir.mahdiparastesh.fortuna --project-name=fortuna'
  */

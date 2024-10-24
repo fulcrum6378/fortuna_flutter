@@ -9,7 +9,7 @@ abstract class BaseNumeral {
       [this.supportsZero = false, this.supportsNegative = false]);
 
   abstract List<String> chars;
-  String defaultStr = "NaN";
+  String defaultStr = 'NaN';
 
   String parse();
 
@@ -35,8 +35,8 @@ abstract class BaseNumeral {
     NumeralType('attic'),
     NumeralType('hieroglyph', true),
   ];
-  static final String key = "numeral_type";
-  static final String defType = "arabic";
+  static final String key = 'numeral_type';
+  static final String defType = 'arabic';
 
   static BaseNumeral? construct(String? type, int n) {
     switch (type) {
@@ -107,11 +107,11 @@ class AtticNumeral extends AtticBasedNumeral {
 
   @override
   List<String> chars = [
-    "I", "\ud800\udd43", // 1, 5
-    "Δ", "\ud800\udd44", // 10, 50
-    "Η", "\ud800\udd45", // 100, 500
-    "Χ", "\ud800\udd46", // 1,000, 5,000
-    "M", "\ud800\udd47" // 10,000, 50,000
+    'I', '\ud800\udd43', // 1, 5
+    'Δ', '\ud800\udd44', // 10, 50
+    'Η', '\ud800\udd45', // 100, 500
+    'Χ', '\ud800\udd46', // 1,000, 5,000
+    'M', '\ud800\udd47' // 10,000, 50,000
   ];
 }
 
@@ -123,11 +123,11 @@ class EtruscanNumeral extends AtticBasedNumeral {
 
   @override
   List<String> chars = [
-    "\uD800\udf20",
-    "\uD800\uDF21",
-    "\uD800\uDF22",
-    "\uD800\uDF23",
-    "\uD800\uDF1F"
+    '\uD800\udf20',
+    '\uD800\uDF21',
+    '\uD800\uDF22',
+    '\uD800\uDF23',
+    '\uD800\uDF1F'
   ];
 }
 
@@ -138,20 +138,20 @@ class RomanNumeral extends AtticBasedNumeral {
 
   @override
   List<String> chars = [
-    "I",
-    "V",
-    "X",
-    "L",
-    "C",
-    "D",
-    "M",
-    "I\u0305",
-    "V\u0305",
-    "X\u0305",
-    "L\u0305",
-    "C\u0305",
-    "D\u0305",
-    "M\u0305"
+    'I',
+    'V',
+    'X',
+    'L',
+    'C',
+    'D',
+    'M',
+    'I\u0305',
+    'V\u0305',
+    'X\u0305',
+    'L\u0305',
+    'C\u0305',
+    'D\u0305',
+    'M\u0305'
   ];
 }
 
@@ -174,62 +174,62 @@ abstract class GematriaLikeNumeral extends BaseNumeral {
 
 class HieroglyphNumeral extends GematriaLikeNumeral {
   HieroglyphNumeral(super.n) {
-    defaultStr = "\uD80C\uDC4F";
+    defaultStr = '\uD80C\uDC4F';
   }
 
   @override
   List<String> chars = [
     // 1..9
-    "\uD80C\uDFFA",
-    "\uD80C\uDFFB",
-    "\uD80C\uDFFC",
-    "\uD80C\uDFFD",
-    "\uD80C\uDFFE",
-    "\uD80C\uDFFF",
-    "\uD80D\uDC00",
-    "\uD80D\uDC01",
-    "\uD80D\uDC02",
+    '\uD80C\uDFFA',
+    '\uD80C\uDFFB',
+    '\uD80C\uDFFC',
+    '\uD80C\uDFFD',
+    '\uD80C\uDFFE',
+    '\uD80C\uDFFF',
+    '\uD80D\uDC00',
+    '\uD80D\uDC01',
+    '\uD80D\uDC02',
     // 10..90
-    "\uD80C\uDF86",
-    "\uD80C\uDF8F",
-    "\uD80C\uDF88",
-    "\uD80C\uDF89",
-    "\uD80C\uDF8A",
-    "\uD80C\uDF8B",
-    "\uD80C\uDF8C",
-    "\uD80C\uDF8D",
-    "\uD80C\uDF8E",
+    '\uD80C\uDF86',
+    '\uD80C\uDF8F',
+    '\uD80C\uDF88',
+    '\uD80C\uDF89',
+    '\uD80C\uDF8A',
+    '\uD80C\uDF8B',
+    '\uD80C\uDF8C',
+    '\uD80C\uDF8D',
+    '\uD80C\uDF8E',
     // 100..900
-    "\uD80C\uDF62",
-    "\uD80C\uDF63",
-    "\uD80C\uDF64",
-    "\uD80C\uDF65",
-    "\uD80C\uDF66",
-    "\uD80C\uDF67",
-    "\uD80C\uDF68",
-    "\uD80C\uDF69",
-    "\uD80C\uDF6A",
+    '\uD80C\uDF62',
+    '\uD80C\uDF63',
+    '\uD80C\uDF64',
+    '\uD80C\uDF65',
+    '\uD80C\uDF66',
+    '\uD80C\uDF67',
+    '\uD80C\uDF68',
+    '\uD80C\uDF69',
+    '\uD80C\uDF6A',
     // 1,000..9,000
-    "\uD80C\uDDBC",
-    "\uD80C\uDDBD",
-    "\uD80C\uDDBE",
-    "\uD80C\uDDBF",
-    "\uD80C\uDDC0",
-    "\uD80C\uDDC1",
-    "\uD80C\uDDC2",
-    "\uD80C\uDDC3",
-    "\uD80C\uDDC4",
+    '\uD80C\uDDBC',
+    '\uD80C\uDDBD',
+    '\uD80C\uDDBE',
+    '\uD80C\uDDBF',
+    '\uD80C\uDDC0',
+    '\uD80C\uDDC1',
+    '\uD80C\uDDC2',
+    '\uD80C\uDDC3',
+    '\uD80C\uDDC4',
     // 10,000..100,000
-    "\uD80C\uDCAD",
-    "\uD80C\uDCAE",
-    "\uD80C\uDCAF",
-    "\uD80C\uDCB0",
-    "\uD80C\uDCB1",
-    "\uD80C\uDCB2",
-    "\uD80C\uDCB3",
-    "\uD80C\uDCB4",
-    "\uD80C\uDCB5",
-    "\uD80C\uDD90"
+    '\uD80C\uDCAD',
+    '\uD80C\uDCAE',
+    '\uD80C\uDCAF',
+    '\uD80C\uDCB0',
+    '\uD80C\uDCB1',
+    '\uD80C\uDCB2',
+    '\uD80C\uDCB3',
+    '\uD80C\uDCB4',
+    '\uD80C\uDCB5',
+    '\uD80C\uDD90'
   ];
 }
 
@@ -239,28 +239,28 @@ class BrahmiNumeral extends GematriaLikeNumeral {
   @override
   List<String> chars = [
     // 1..9
-    "\uD804\uDC52",
-    "\uD804\uDC53",
-    "\uD804\uDC54",
-    "\uD804\uDC55",
-    "\uD804\uDC56",
-    "\uD804\uDC57",
-    "\uD804\uDC58",
-    "\uD804\uDC59",
-    "\uD804\uDC5A",
+    '\uD804\uDC52',
+    '\uD804\uDC53',
+    '\uD804\uDC54',
+    '\uD804\uDC55',
+    '\uD804\uDC56',
+    '\uD804\uDC57',
+    '\uD804\uDC58',
+    '\uD804\uDC59',
+    '\uD804\uDC5A',
     // 10..90
-    "\uD804\uDC5B",
-    "\uD804\uDC5C",
-    "\uD804\uDC5D",
-    "\uD804\uDC5E",
-    "\uD804\uDC5F",
-    "\uD804\uDC60",
-    "\uD804\uDC61",
-    "\uD804\uDC62",
-    "\uD804\uDC63",
+    '\uD804\uDC5B',
+    '\uD804\uDC5C',
+    '\uD804\uDC5D',
+    '\uD804\uDC5E',
+    '\uD804\uDC5F',
+    '\uD804\uDC60',
+    '\uD804\uDC61',
+    '\uD804\uDC62',
+    '\uD804\uDC63',
     // 100 (the rest are not available in unicode!)
-    "\uD804\uDC64"
-    // except 1,000: "\uD804\uDC65" which is useless without the previous chars!
+    '\uD804\uDC64'
+    // except 1,000: '\uD804\uDC65' which is useless without the previous chars!
   ];
 }
 
@@ -269,9 +269,9 @@ class OldPersianNumeral extends BaseNumeral {
 
   @override
   List<String> chars = [
-    "\uD800\uDFD1", "\uD800\uDFD2", // 1, 2
-    "\uD800\uDFD3", "\uD800\uDFD4", // 10, 20
-    "\uD800\uDFD5" // 100
+    '\uD800\uDFD1', '\uD800\uDFD2', // 1, 2
+    '\uD800\uDFD3', '\uD800\uDFD4', // 10, 20
+    '\uD800\uDFD5' // 100
   ];
 
   int charToInt(int i) {

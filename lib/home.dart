@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jiffy/jiffy.dart';
 
@@ -105,7 +106,7 @@ class Home extends StatelessWidget {
                         keyboardType: TextInputType.number,
                         style: Fortuna.font(20, bold: true),
                         decoration: InputDecoration(
-                          counterText: "", // NOT THE DEF VALUE ^
+                          counterText: '', // NOT THE DEF VALUE ^
                           border: InputBorder.none,
                         ),
                         onChanged: (s) {
@@ -160,16 +161,31 @@ class Home extends StatelessWidget {
               ]),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 20, right: 30),
+              padding: EdgeInsets.only(top: 20, right: 40),
               child: Align(
                 alignment: Alignment.centerRight,
-                child: Visibility(
-                  visible: luna.verbum != null,
-                  maintainState: true,
-                  maintainAnimation: true,
-                  maintainSize: true,
-                  child: Fortuna.verbumIcon(),
-                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Visibility(
+                    visible: luna.emoji != null,
+                    maintainState: true,
+                    maintainAnimation: true,
+                    maintainSize: true,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 6),
+                      child: Text(
+                        luna.emoji != null ? luna.emoji! : '',
+                        style: Fortuna.font(14),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: luna.verbum != null,
+                    maintainState: true,
+                    maintainAnimation: true,
+                    maintainSize: true,
+                    child: verbumIcon(),
+                  ),
+                ]),
               ),
             ),
           ]),
@@ -222,12 +238,25 @@ class Home extends StatelessWidget {
                     ),
                     child: Stack(children: [
                       Visibility(
+                        visible: luna.emojis[i] != null,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 7, top: 5),
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              luna.emojis[i] != null ? luna.emojis[i]! : '',
+                              style: Fortuna.font(14),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Visibility(
                         visible: luna.verba[i] != null,
                         child: Padding(
-                          padding: EdgeInsets.only(right: 6, top: 6),
+                          padding: EdgeInsets.only(right: 6, top: 8),
                           child: Align(
                             alignment: Alignment.topRight,
-                            child: Fortuna.verbumIcon(tc),
+                            child: verbumIcon(tc),
                           ),
                         ),
                       ),
@@ -246,7 +275,7 @@ class Home extends StatelessWidget {
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              (isEstimated ? "c. " : "") + score.showScore(),
+                              (isEstimated ? 'c. ' : '') + score.showScore(),
                               style: Fortuna.font(13, color: tc),
                             ),
                           ],
@@ -308,9 +337,12 @@ class Home extends StatelessWidget {
   dynamic cellSize(BuildContext c) =>
       MediaQuery.of(c).size.width / cellsInRow(c);
 
+  Icon verbumIcon([Color? tc]) =>
+      Icon(Icons.chat_sharp, color: tc ?? Fortuna.textColor(), size: 17);
+
   void changeVar(BuildContext c, String key, Luna luna, int? i) {
     int selectedVar = 6;
-    String enteredEmoji = "", enteredVerbum = "";
+    String enteredEmoji = '', enteredVerbum = '';
 
     showCupertinoModalPopup(
       context: c,
@@ -323,24 +355,20 @@ class Home extends StatelessWidget {
           selectedVar = 6;
         }
 
-        if (i != null && luna.emojis.length > i && luna.emojis[i] != null) {
-          enteredEmoji = luna.emojis[i]!;
-        } else if (luna.emoji != null) {
-          enteredEmoji = luna.emoji!;
+        if (i != null) {
+          enteredEmoji = luna.emojis[i] ?? '';
         } else {
-          enteredEmoji = "";
+          enteredEmoji = luna.emoji ?? '';
         }
 
-        if (i != null && luna.verba.length > i && luna.verba[i] != null) {
-          enteredVerbum = luna.verba[i]!;
-        } else if (luna.verbum != null) {
-          enteredVerbum = luna.verbum!;
+        if (i != null) {
+          enteredVerbum = luna.verba[i] ?? '';
         } else {
-          enteredVerbum = "";
+          enteredVerbum = luna.verbum ?? '';
         }
 
         return AlertDialog(
-          title: Text((i != null) ? "$key.${z(i + 1)}" : s('defValue')),
+          title: Text((i != null) ? '$key.${z(i + 1)}' : s('defValue')),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             SizedBox(
               height: 200,
@@ -375,13 +403,27 @@ class Home extends StatelessWidget {
                       textAlign: TextAlign.start,
                       style: TextStyle(fontSize: 19),
                       decoration: InputDecoration(
+                        counterText: '',
                         border: InputBorder.none,
-                        hintText: '😃',
+                        hintText: luna.emoji ?? '😃',
                         hintStyle: TextStyle(
                           color: Colors.black.withOpacity(0.5),
                         ),
                       ),
-                      //onChanged: (s) => enteredVerbum = s,
+                      inputFormatters: <TextInputFormatter>[
+                        TextInputFormatter.withFunction((oldValue, newValue) {
+                          String entered = newValue.text;
+                          if (oldValue.text.isNotEmpty) {
+                            entered = entered.replaceFirst(oldValue.text, '');
+                          }
+                          return TextEditingValue(
+                            text: (Fortuna.emojis.contains(entered))
+                                ? entered
+                                : '',
+                          );
+                        }),
+                      ],
+                      onChanged: (s) => enteredEmoji = s,
                     ),
                   ),
                 ),
@@ -404,7 +446,7 @@ class Home extends StatelessWidget {
                     keyboardType: TextInputType.text,
                     style: Fortuna.font(18),
                     decoration: InputDecoration(
-                      counterText: "",
+                      counterText: '',
                       border: InputBorder.none,
                     ),
                     onChanged: (s) => enteredVerbum = s,
@@ -420,7 +462,7 @@ class Home extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               onPressed: () {
-                saveScore(c, key, luna, i, null, null);
+                saveScore(c, key, luna, i, null, null, null);
               },
             ),
             MaterialButton(
@@ -437,7 +479,7 @@ class Home extends StatelessWidget {
               ),
               onPressed: () {
                 saveScore(c, key, luna, i, variabilisToScore(selectedVar),
-                    enteredVerbum);
+                    enteredEmoji, enteredVerbum);
                 context.read<HomeCubit>().update();
                 Navigator.of(context).pop();
                 Fortuna.shake();
@@ -455,14 +497,17 @@ class Home extends StatelessWidget {
     Luna luna,
     int? i,
     double? score,
+    String? emoji,
     String? verbum,
   ) {
     if (verbum?.isEmpty == true) verbum = null;
     if (i != null) {
       luna.diebus[i] = score;
+      luna.emojis[i] = emoji;
       luna.verba[i] = verbum;
     } else {
       luna.defVar = score;
+      luna.emoji = emoji;
       luna.verbum = verbum;
     }
     context.read<Vita>().set(key, luna);
