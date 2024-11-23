@@ -376,6 +376,7 @@ String s(String key) => lang[Fortuna.l]![key]!;
 
 /*TODO:
    * Fix default verbum save problem only in Android?!?
+   * Variabilis in dark mode
 
  * Running 'flutter create .' will import default files to Android and iOS too!
  * Run 'flutter 'flutter create --platforms=web .'; Add these arguments in
