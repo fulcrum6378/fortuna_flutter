@@ -11,14 +11,6 @@ android {
     ndkVersion = System.getenv("NDK_VERSION")
     buildToolsVersion = System.getenv("ANDROID_BUILD_TOOLS_VERSION")
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17
-    }
-
     signingConfigs {
         main {
             storeFile = file("${System.getenv("JKS_PATH")}")
@@ -34,6 +26,21 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         signingConfig = signingConfigs.main
+    }
+
+    flavorDimensions "calendar"
+    productFlavors {
+        all { dimension "calendar" }
+        iranian { getIsDefault().set(true) }
+        gregorian { applicationIdSuffix ".gregorian" }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17
     }
 }
 

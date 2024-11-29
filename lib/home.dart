@@ -37,6 +37,13 @@ class Home extends StatelessWidget {
             ? const Color(0xFFF0F0F0)
             : const Color(0xFF252525));
 
+    if (!Fortuna.loaded) { // FIXME doesn't work
+      return BlocBuilder<HomeCubit, DateTime>(
+          builder: (context, calendar) => Center(
+                child: Text("Loading..."), //CircularProgressIndicator(),
+              ));
+    }
+
     return BlocBuilder<HomeCubit, DateTime>(
       builder: (context, calendar) {
         String lunaKey = calendar.toKey();

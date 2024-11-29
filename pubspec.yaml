@@ -1,7 +1,7 @@
 name: fortuna
 description: "An application of the Hedonist philosophy."
 publish_to: 'none'
-version: 4.2.5
+version: 4.3.0
 environment:
   sdk: ^3.5.3
 
@@ -18,7 +18,7 @@ dependencies:
   path_provider: ^2.1.5
   share_plus: ^10.1.2
   shared_preferences: ^2.3.3
-  # time_machine: ^X.X.X
+  time_machine: ^0.9.17
   vibration: ^2.0.0  # VibrationPlugin.java uses or overrides a deprecated API!
 
 dev_dependencies:

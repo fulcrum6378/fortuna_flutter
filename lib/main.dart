@@ -100,10 +100,16 @@ void main() {
 class Fortuna extends StatelessWidget {
   const Fortuna({super.key});
 
+  static const String? flavour =
+      String.fromEnvironment('FLUTTER_APP_FLAVOR') != ''
+          ? String.fromEnvironment('FLUTTER_APP_FLAVOR')
+          : null;
+
   static String l = 'en';
   static SharedPreferences? sp;
   static late List<String> emojis;
   static bool showingSnackbar = false;
+  static bool loaded = false;
 
   static bool night() =>
       PlatformDispatcher.instance.platformBrightness == Brightness.dark;
@@ -135,30 +141,27 @@ class Fortuna extends StatelessWidget {
     Vibration.vibrate(duration: 40, amplitude: 100);
   }
 
+  Future<void> loadAll(BuildContext context) async {
+    await context.read<Vita>().load();
+    sp = await SharedPreferences.getInstance();
+    emojis = (await rootBundle.loadString('assets/emojis.txt')).split(' ');
+    canShake = (await Vibration.hasVibrator()) == true;
+
+    loaded = true;
+    if (context.mounted) context.read<HomeCubit>().update();
+  }
+
   @override
   Widget build(BuildContext context) {
-    context.read<Vita>().load().then((_) {
-      if (context.mounted) context.read<HomeCubit>().update();
-    });
+    loadAll(context);
 
     final systemOverlayStyle = SystemUiOverlayStyle(
       statusBarColor: Theme.of(context).primaryColor,
       systemNavigationBarColor: Theme.of(context).primaryColor,
     );
     SystemChrome.setSystemUIOverlayStyle(systemOverlayStyle);
-
-    SharedPreferences.getInstance().then((value) {
-      sp = value;
-      if (context.mounted) context.read<HomeCubit>().update();
-    });
     String selectedNumType =
         Fortuna.sp?.getString(BaseNumeral.key) ?? BaseNumeral.defType;
-
-    Vibration.hasVibrator().then((value) => canShake = value == true);
-
-    rootBundle
-        .loadString('assets/emojis.txt')
-        .then((data) => emojis = data.split(' '));
 
     return Scaffold(
       appBar: AppBar(
@@ -377,8 +380,5 @@ String s(String key) => lang[Fortuna.l]![key]!;
 /*TODO:
    * Fix default verbum save problem only in Android?!?
    * Variabilis in dark mode
-
- * Running 'flutter create .' will import default files to Android and iOS too!
- * Run 'flutter 'flutter create --platforms=web .'; Add these arguments in
- * similar situations: '--org=ir.mahdiparastesh.fortuna --project-name=fortuna'
- */
+   * Create build flavous for iOS & macOS (https://docs.flutter.dev/deployment/flavors)
+  */
